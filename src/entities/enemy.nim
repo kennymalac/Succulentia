@@ -19,10 +19,6 @@ type
 type
   Bee* = ref object of Enemy
 
-proc update*(self: Enemy, dt: times.Time) =
-  #self.position = self.speed * dt
-  discard
-
 proc turn*(self: Enemy, direction: Vector2i) =
   self.direction = direction
 
