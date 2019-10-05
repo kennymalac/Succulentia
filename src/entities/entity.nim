@@ -5,9 +5,12 @@ type
   Entity* = ref object of RootObj
     sprite*: Sprite
 
+proc initEntity*(self: Entity, sprite: Sprite) =
+  self.sprite = sprite
+
 proc newEntity*(sprite: Sprite): Entity =
   new result
-  result.sprite = sprite
+  initEntity(result, sprite)
 
 proc update*(self: Entity, dt: times.Duration) =
   discard

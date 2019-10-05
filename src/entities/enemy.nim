@@ -3,13 +3,14 @@ import entity
 import succulent
 import times
 import math
+import vector_utils
 
 type
   Enemy* = ref object of Entity
-    direction: Vector2i
-    damage: int
-    speed: int
-    health: int
+    direction*: Vector2f
+    speed*: float 
+    damage*: int
+    health*: int
 
 type 
   Ant* = ref object of Enemy
@@ -29,19 +30,28 @@ proc attack*(self: Enemy, direction: Vector2i, succulent: Succulent) =
   # attack direction
   succulent.health -= self.damage
 
-proc update*(self: Ant, dt: times.Duration) =
+proc updatePosition*(self: Ant, dt: times.Duration) =
   discard
 
-proc getNearestSuc(self: Enemy, entities: seq[Entity]): Succulent =
+proc move*(self: Ant) =
+  var moveVector: Vector2f = vec2(self.direction.x, self.direction.y)
+  moveVector.x *= self.speed
+  moveVector.y *= self.speed
+  self.sprite.move(moveVector)
+
+proc updateDirection*(self: Ant, entity: Entity) =
+  self.direction = vector_utils.normalize(entity.sprite.position - self.sprite.position)
+
+proc getNearestSuc*(self: Enemy, entities: seq[Entity]): Succulent =
   # return closest succulent from entities array
   var distance: float = high(float)
-  var suc: Succulent
-  for i, entity in entities:
+  var suc: Succulent = nil
+  for entity in entities:
     if entity of Succulent:
       var sucDistance: float = abs(sqrt((pow(self.sprite.position.x - entity.sprite.position.x, 2) + pow(self.sprite.position.y - entity.sprite.position.y, 2))))
       if sucDistance < distance:
         distance = sucDistance
-        suc = entity
+        suc = (Succulent) entity
   return suc
 
 proc print*(self: Ant) =
