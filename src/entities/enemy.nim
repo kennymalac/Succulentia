@@ -34,12 +34,15 @@ proc update*(self: Ant, dt: times.Duration) =
 
 proc getNearestSuc(self: Enemy, entities: seq[Entity]): Succulent =
   # return closest succulent from entities array
-  var distance: float = 0
+  var distance: float = high(float)
+  var suc: Succulent
   for i, entity in entities:
     if entity of Succulent:
-      #sucDistance: float = abs(sqrt(((self.sprite.position.x - entity.sprite.position.x)
-      discard
-  discard
+      var sucDistance: float = abs(sqrt((pow(self.sprite.position.x - entity.sprite.position.x, 2) + pow(self.sprite.position.y - entity.sprite.position.y, 2))))
+      if sucDistance < distance:
+        distance = sucDistance
+        suc = entity
+  return suc
 
 proc print*(self: Ant) =
   echo "I am an Ant\n"
