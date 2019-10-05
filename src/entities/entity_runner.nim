@@ -14,7 +14,7 @@ ant = Ant()
 spider = Spider()
 bee = Bee()
 
-let suc_texture = new_Texture("../../assets/graphics/sample_succ_1.png")
+let suc_texture = new_Texture("../../assets/graphics/basic-succ.png")
 let suc_sprite = new_Sprite(suc_texture)
 
 suc = newEntity(suc_sprite)
