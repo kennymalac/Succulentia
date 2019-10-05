@@ -1,7 +1,7 @@
 import entity, enemy, succulent
 
 var 
-  ant: Ant 
+  ant: Ant
   spider: Spider
   bee: Bee
   suc: Succulent
