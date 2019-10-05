@@ -1,5 +1,5 @@
 import csfml
-import assetLoader
+import times
 
 type
   Entity* = ref object of RootObj
@@ -8,7 +8,7 @@ type
 proc newEntity*(self: Entity, sprite: Sprite, ) =
   self.sprite = sprite
 
-proc update*(self: Entity, times.Time) =
+proc update*(self: Entity, dt: times.Time) =
   discard
 
 proc draw() =
