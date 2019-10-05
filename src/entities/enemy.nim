@@ -8,6 +8,7 @@ type
     direction: Vector2i
     damage: int
     speed: int
+    health: int
 
 type 
   Ant* = ref object of Enemy
