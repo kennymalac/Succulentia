@@ -12,7 +12,7 @@ proc setupWindow(windowConfig: WindowConfig): RenderWindow =
   result.vertical_sync_enabled = true
   result.framerate_limit = fps
 
-proc main(windowConfig: WindowConfig): void =
+proc main(windowConfig: WindowConfig) =
   let window = setupWindow(windowConfig)
 
   var currentScene = newScene(
