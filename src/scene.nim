@@ -27,6 +27,10 @@ proc newScene*(window: RenderWindow, title: string, origin: Vector2f, size: Vect
     assetLoader: newAssetLoader("assets")
   )
 
+proc load*(self: Scene) =
+  # Scenes overload this to initialize all initial entities
+  discard
+
 proc update*(self: Scene) =
   self.currentTime = getTime()
   var dt = self.currentTime - self.previousTime
