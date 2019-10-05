@@ -2,6 +2,7 @@ import csfml
 import entity
 import succulent
 import times
+import math
 
 type
   Enemy* = ref object of Entity
@@ -27,6 +28,18 @@ proc attack*(self: Enemy, direction: Vector2i, succulent: Succulent) =
   # attack animation
   # attack direction
   succulent.health -= self.damage
+
+proc update*(self: Ant, dt: times.Duration) =
+  discard
+
+proc getNearestSuc(self: Enemy, entities: seq[Entity]): Succulent =
+  # return closest succulent from entities array
+  var distance: float = 0
+  for i, entity in entities:
+    if entity of Succulent:
+      #sucDistance: float = abs(sqrt(((self.sprite.position.x - entity.sprite.position.x)
+      discard
+  discard
 
 proc print*(self: Ant) =
   echo "I am an Ant\n"
