@@ -1,4 +1,5 @@
 import strformat
+
 import csfml
 
 type
@@ -15,10 +16,17 @@ type
 proc newAssetLoader*(location: string, scale: Vector2f = vec2(1.0, 1.0)): AssetLoader =
   result = AssetLoader(location: location)
 
+proc newImageAsset*(self: AssetLoader, location: string): ImageAsset =
+  echo fmt"{self.location}/graphics/{location}"
+  result = ImageAsset(texture: new_Texture(fmt"{self.location}/graphics/{location}"))
+  result.size = result.texture.size
+
 proc newImageAsset*(self: AssetLoader, location: string, size: Vector2i): ImageAsset =
-  result = ImageAsset(texture: new_Texture(fmt"{self.location}/graphics/{location}"), size: size)
+  echo fmt"{self.location}/graphics/{location}"
+  result = ImageAsset(texture: new_Texture(fmt"{self.location}/graphics/{location}"))
+  result.size = size
 
 proc newSprite*(self: AssetLoader, image: ImageAsset): Sprite =
   result = new_Sprite(image.texture)
-  result.origin = vec2(image.size.x/2, image.size.y/2)
-  result.scale = self.scale
+  # result.origin = vec2(image.size.x/2, image.size.y/2)
+  # result.scale = self.scale

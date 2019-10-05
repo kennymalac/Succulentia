@@ -1,13 +1,13 @@
 import entities/entity
 import assetLoader
 
-import times, sequtils
+import times
 import csfml #, csfml/ext
 
 type
-  Scene* = ref object
+  Scene* = ref object of RootObj
     title*: string
-    size*: Vector2f
+    size*: Vector2i
     view*: View
     entities*: seq[Entity]
     assetLoader*: AssetLoader
@@ -17,15 +17,17 @@ type
     currentTime: times.Time
     previousTime: times.Time
 
-proc newScene*(window: RenderWindow, title: string, origin: Vector2f, size: Vector2f): Scene =
-  result = Scene(
-    title: title,
-    origin: origin,
-    size: size,
-    previousTime: getTime(),
-    view: new_View(origin, size),
-    assetLoader: newAssetLoader("assets")
-  )
+proc initScene*(self: Scene, window: RenderWindow, title: string, origin: Vector2f, size: Vector2i) =
+  self.title = title
+  self.origin = origin
+  self.size = size
+  self.previousTime = getTime()
+  self.view = new_View(origin, size)
+  self.assetLoader = newAssetLoader("assets")
+
+proc newScene*(window: RenderWindow, title: string, origin: Vector2f, size: Vector2i): Scene =
+  new result
+  initScene(result, window, title, origin, size)
 
 proc load*(self: Scene) =
   # Scenes overload this to initialize all initial entities
