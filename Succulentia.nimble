@@ -10,3 +10,4 @@ bin           = @["Succulentia"]
 # Dependencies
 
 requires "nim >= 1.0.0"
+requires "csfml >= 2.5.0"
