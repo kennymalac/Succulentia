@@ -8,7 +8,7 @@ type
 proc move*(self: Entity, position: Vector2i) =
   self.position = position
 
-proc new_entity*(self: Entity, sprite: Sprite) =
+proc newEntity*(self: Entity, sprite: Sprite) =
   self.sprite = sprite
 
 proc print*(self: Entity) =
