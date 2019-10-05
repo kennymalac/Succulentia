@@ -5,10 +5,10 @@ type
   Entity* = ref object of RootObj
     sprite*: Sprite
 
-proc newEntity*(self: Entity, sprite: Sprite, ) =
+proc newEntity*(self: Entity, sprite: Sprite) =
   self.sprite = sprite
 
-proc update*(self: Entity, dt: times.Time) =
+proc update*(self: Entity, dt: times.Duration) =
   discard
 
 proc draw() =
