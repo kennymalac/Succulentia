@@ -1,6 +1,8 @@
 import csfml, csfml/ext
 import tables
 
+import scene
+
 type WindowConfig = tuple[title: string, width: cint, height: cint, fps: cint]
 
 proc setupWindow(windowConfig: WindowConfig): RenderWindow =
@@ -12,6 +14,10 @@ proc setupWindow(windowConfig: WindowConfig): RenderWindow =
 
 proc main(windowConfig: WindowConfig): void =
   let window = setupWindow(windowConfig)
+
+  var currentScene = newScene(
+    window, title = "Test", origin = vec2(window.size.x/2, window.size.y/2), size = vec2(window.size.x, window.size.y)
+  )
 
   while window.open:
     var event: Event
@@ -28,6 +34,9 @@ proc main(windowConfig: WindowConfig): void =
 
     # currentScene.draw();
     window.clear color(112, 197, 206)
+    currentScene.update()
+    currentScene.draw(window)
+
     window.display()
 
 
