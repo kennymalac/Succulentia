@@ -56,7 +56,7 @@ proc load*(self: Stage1) =
   )
   antSprite.position = vec2(500, 400)
 
-  let ant = Ant(sprite: ant_sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, hea lth: 15)
+  let ant = Ant(sprite: ant_sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 15)
   self.entities.add(Entity(ant))
 
   let nearestSuc: Succulent = ant.getTargetSuc(self.entities)
