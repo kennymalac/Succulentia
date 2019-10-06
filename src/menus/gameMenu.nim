@@ -2,11 +2,12 @@ import times
 
 import options
 
-import csfml
+import csfml, csfml/audio
 
 import menu
 
 import ../assetLoader
+import ../soundRegistry
 
 type
   GameMenuItemKind* = enum
@@ -41,8 +42,8 @@ proc newGameMenuItem(self: GameMenu, kind: GameMenuItemKind): GameMenuItem =
 
   result.sprite.scale = vec2(1.5 * result.sprite.scale.x, 1.5 * result.sprite.scale.y)
 
-proc newGameMenu*(assetLoader: AssetLoader, size: Vector2i): GameMenu =
-  result = GameMenu(assetLoader: assetLoader)
+proc newGameMenu*(assetLoader: AssetLoader, soundRegistry: SoundRegistry, size: Vector2i): GameMenu =
+  result = GameMenu(assetLoader: assetLoader, clickSound: soundRegistry.getSound(ClickSound))
   result.items = @[MenuItem(result.newGameMenuItem(Clicker)), MenuItem(result.newGameMenuItem(Shovel)), MenuItem(result.newGameMenuItem(WateringCan))]
 
   let yOffsetFactor = cfloat(10)

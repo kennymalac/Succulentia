@@ -69,7 +69,7 @@ proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
     of GameMusicSound: location = GameMusicSoundLocation
     of RunningWaterSound: location = RunningWaterSoundLocation
 
-  result = SoundAsset(buffer: newSoundBuffer(joinPath(self.location, "sounds", location)))
+  result = SoundAsset(buffer: newSoundBuffer(joinPath(self.location, "sound", location)))
 
 proc newSound*(self: SoundAsset): Sound =
   result = newSound()

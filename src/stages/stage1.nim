@@ -1,9 +1,10 @@
 import options
 
-import csfml
+import csfml, csfml/audio
 
 import ../scene
 import ../assetLoader
+import ../soundRegistry
 import ../entities/entity
 import ../menus/gameMenu
 import ../cursor
@@ -17,6 +18,7 @@ type
   Stage1* = ref object of Scene
     background: Sprite
     boundary: Boundary
+    soundRegistry: SoundRegistry
     gameMenu: GameMenu
     clickerCursor: GameCursor
 
@@ -32,6 +34,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   )
 
   result.clickerCursor = newGameCursor(result.assetLoader, ClickerCursor)
+  result.soundRegistry = newSoundRegistry(result.assetLoader)
 
 proc load*(self: Stage1) =
   self.background = self.assetLoader.newSprite(
@@ -42,7 +45,7 @@ proc load*(self: Stage1) =
   self.background.scale = vec2(1, 1)
   self.background.position = vec2(0, 0)
 
-  self.gameMenu = newGameMenu(self.assetLoader, self.size)
+  self.gameMenu = newGameMenu(self.assetLoader, self.soundRegistry, self.size)
 
   let sucSprite = self.assetLoader.newSprite(
     self.assetLoader.newImageAsset("basic-succ.png"),
@@ -68,6 +71,8 @@ proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind)
   of Clicker:
     window.mouseCursor = self.clickerCursor.cursor
   else: discard
+
+  self.gameMenu.clickSound.play()
 
 proc pollEvent*(self: Stage1, window: RenderWindow) =
   var event: Event

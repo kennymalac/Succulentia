@@ -1,8 +1,9 @@
 import times
 
-import csfml
+import csfml, csfml/audio
 
 import ../assetLoader
+import ../soundRegistry
 
 type
   MenuItem* = ref object of RootObj
@@ -10,13 +11,14 @@ type
 
   Menu* = ref object of RootObj
     assetLoader*: AssetLoader
+    clickSound*: Sound
     items*: seq[MenuItem]
 
 proc onClick*(self: MenuItem) =
   discard
 
-proc newMenu*(items: seq[MenuItem], assetLoader: AssetLoader): Menu =
-  result = Menu(items: items, assetLoader: assetLoader)
+proc newMenu*(items: seq[MenuItem], soundRegistry: SoundRegistry, assetLoader: AssetLoader): Menu =
+  result = Menu(items: items, assetLoader: assetLoader, clickSound: soundRegistry.getSound(ClickSound))
 
 proc update(self: Menu, dt: times.Duration) =
   discard
