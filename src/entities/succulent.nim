@@ -4,6 +4,7 @@ import csfml
 type
   Succulent* = ref object of Entity
     health*: int
+    hydration*: int
 
 proc newSucculent*(self: Succulent, sprite: Sprite): Succulent =
   result = Succulent(health: 100)

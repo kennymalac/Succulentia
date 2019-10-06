@@ -5,7 +5,7 @@ import vector_utils
 var window = new_RenderWindow(video_mode(800, 600), "Succulentia")
 window.vertical_sync_enabled = true
 
-var 
+var
   ant: Enemy
   spider: Enemy
   bee: Enemy

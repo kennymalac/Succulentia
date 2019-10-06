@@ -3,7 +3,7 @@ import entity, succulent
 
 type
   Pot* = ref object of Entity
-    health*: int 
+    health*: int
     suc*: Succulent
 
 proc newPot*(self: Pot, sprite: Sprite): Pot =
