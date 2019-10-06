@@ -3,12 +3,14 @@ import csfml
 import ../scene
 import ../assetLoader
 import ../entities/entity
+import ../menus/gameMenu
 
 import stage
 
 type
   Stage1* = ref object of Scene
     boundary: Boundary
+    gameMenu: GameMenu
 
 proc newStage1*(window: RenderWindow): Stage1 =
   let boundary: Boundary = (cint(100), cint(100), cint(100), cint(100))
@@ -23,6 +25,8 @@ proc newStage1*(window: RenderWindow): Stage1 =
   )
 
 proc load*(self: Stage1) =
+  self.gameMenu = newGameMenu(self.assetLoader)
+
   let sucSprite = self.assetLoader.newSprite(
     self.assetLoader.newImageAsset("basic-succ.png"),
   )
@@ -37,4 +41,5 @@ proc update*(self: Stage1) =
   self.Scene.update()
 
 proc draw*(self: Stage1, window: RenderWindow) =
+  self.gameMenu.draw(window)
   self.Scene.draw(window)
