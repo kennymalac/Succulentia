@@ -4,9 +4,15 @@ import times
 type
   Entity* = ref object of RootObj
     sprite*: Sprite
+    rect*: FloatRect
 
 proc initEntity*(self: Entity, sprite: Sprite) =
   self.sprite = sprite
+  self.rect = rect(sprite.position.x, sprite.position.y, cfloat(sprite.texture.size.x), cfloat(sprite.texture.size.y))
+
+proc initEntity*(self: Entity, sprite: Sprite, rect: FloatRect) =
+  self.sprite = sprite
+  self.rect = rect
 
 proc newEntity*(sprite: Sprite): Entity =
   new result

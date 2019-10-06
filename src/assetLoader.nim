@@ -1,11 +1,14 @@
 import strformat
 
-import csfml
+import csfml, csfml/audio
 
 type
   ImageAsset* = ref object
     texture*: Texture
     size*: Vector2i
+
+  SoundAsset* = ref object
+    sound*: Sound
 
 type
   AssetLoader* = ref object
@@ -30,3 +33,6 @@ proc newSprite*(self: AssetLoader, image: ImageAsset): Sprite =
   result = new_Sprite(image.texture)
   # result.origin = vec2(image.size.x/2, image.size.y/2)
   # result.scale = self.scale
+
+proc newSoundAsset*(self: AssetLoader, location: string): SoundAsset =
+  discard
