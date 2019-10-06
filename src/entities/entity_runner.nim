@@ -22,7 +22,7 @@ let antTexture = new_Texture("../../assets/graphics/ant-sprite.png")
 let antSprite = new_Sprite(ant_texture)
 antSprite.position = vec2(300, 300)
 
-suc = newSucculent(suc, sucSprite)
+suc = newSucculent(sucSprite)
 
 var sucs: seq[Entity]
 sucs = @[ (Entity) suc ]

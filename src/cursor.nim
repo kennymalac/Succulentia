@@ -28,4 +28,4 @@ proc newGameCursor*(assetLoader: AssetLoader, kind: GameCursorKind): GameCursor 
 
   echo location
   let image = assetLoader.newImage(location);
-  result.cursor = newCursor(image.pixelsPtr, image.size, vec2(0, 0))
+  result.cursor = newCursor(image.pixelsPtr, image.size, vec2(cint(image.size.x/2), cint(image.size.y/2)))

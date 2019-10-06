@@ -17,17 +17,17 @@ type
     currentTime: times.Time
     previousTime: times.Time
 
-proc initScene*(self: Scene, window: RenderWindow, title: string, origin: Vector2f, size: Vector2i) =
+proc initScene*(self: Scene, window: RenderWindow, title: string, origin: Vector2f) =
   self.title = title
   self.origin = origin
-  self.size = size
+  self.size = window.size
   self.previousTime = getTime()
-  self.view = new_View(origin, size)
+  self.view = newView(origin, window.size)
   self.assetLoader = newAssetLoader("assets")
 
-proc newScene*(window: RenderWindow, title: string, origin: Vector2f, size: Vector2i): Scene =
+proc newScene*(window: RenderWindow, title: string, origin: Vector2f): Scene =
   new result
-  initScene(result, window, title, origin, size)
+  initScene(result, window, title, origin)
 
 proc load*(self: Scene) =
   # Scenes overload this to initialize all initial entities

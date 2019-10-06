@@ -1,5 +1,7 @@
 import times
 
+import options
+
 import csfml
 
 import menu
@@ -28,14 +30,16 @@ proc onClick*(self: GameMenuItem) =
     of WateringCan: discard
 
 proc newGameMenuItem(self: GameMenu, kind: GameMenuItemKind): GameMenuItem =
-  new result
+  result = GameMenuItem(kind: kind)
 
   proc newSprite(location: string): Sprite = self.assetLoader.newSprite(self.assetLoader.newImageAsset(location))
 
   case kind:
-    of Clicker: result = GameMenuItem(sprite: newSprite("game-button-clicker.png"))
-    of Shovel: result = GameMenuItem(sprite: newSprite("game-button-shovel.png"))
-    of WateringCan: result = GameMenuItem(sprite: newSprite("game-button-watercan.png"))
+    of Clicker: result.sprite = newSprite("game-button-clicker.png")
+    of Shovel: result.sprite = newSprite("game-button-shovel.png")
+    of WateringCan: result.sprite = newSprite("game-button-watercan.png")
+
+  result.sprite.scale = vec2(1.5 * result.sprite.scale.x, 1.5 * result.sprite.scale.y)
 
 proc newGameMenu*(assetLoader: AssetLoader, size: Vector2i): GameMenu =
   result = GameMenu(assetLoader: assetLoader)
@@ -45,6 +49,7 @@ proc newGameMenu*(assetLoader: AssetLoader, size: Vector2i): GameMenu =
 
   let itemsLength = result.items.len
 
+  # Draw menu in bottom left of screen
   let leftBottomCornerTop = (
     cfloat(size.x) - result.items[0].sprite.scaledSize.x - cfloat(10),
     cfloat(size.y) - result.items[0].sprite.scaledSize.y * cfloat(itemsLength) - yOffsetFactor * cfloat(itemsLength)
@@ -61,3 +66,12 @@ proc update*(self: GameMenu, dt: times.Duration) =
 proc draw*(self: GameMenu, window: RenderWindow) =
   for item in self.items:
     window.draw(item.sprite)
+
+type containsResult = tuple[doesContain: bool, maybeKind: Option[GameMenuItemKind]]
+
+proc contains*(self: GameMenu, point: Vector2f): containsResult =
+  for item in self.items:
+    if item.sprite.globalBounds.contains(point):
+      return (true, some(GameMenuItem(item).kind))
+
+  return (false, none(GameMenuItemKind))

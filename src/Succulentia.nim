@@ -20,17 +20,7 @@ proc main(windowConfig: WindowConfig) =
   window.view = currentScene.view
 
   while window.open:
-    var event: Event
-    while window.poll_event(event):
-      case event.kind
-        of EventType.Closed:
-          window.close()
-        of EventType.KeyPressed:
-          case event.key.code
-            of KeyCode.Escape:
-              window.close()
-            else: discard
-        else: discard
+    currentScene.pollEvent(window)
 
     # currentScene.draw();
     window.clear color(112, 197, 206)

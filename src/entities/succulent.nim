@@ -6,7 +6,7 @@ type
     health*: int
     hydration*: int
 
-proc newSucculent*(self: Succulent, sprite: Sprite): Succulent =
+proc newSucculent*(sprite: Sprite): Succulent =
   result = Succulent(health: 100)
   initEntity(result, sprite)
 

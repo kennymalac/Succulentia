@@ -1,3 +1,5 @@
+import options
+
 import csfml
 
 import ../scene
@@ -6,13 +8,17 @@ import ../entities/entity
 import ../menus/gameMenu
 import ../cursor
 
+import ../entities/enemy
+import ../entities/succulent
+
 import stage
 
 type
   Stage1* = ref object of Scene
+    background: Sprite
     boundary: Boundary
     gameMenu: GameMenu
-    cursor: GameCursor
+    clickerCursor: GameCursor
 
 proc newStage1*(window: RenderWindow): Stage1 =
   let boundary: Boundary = (cint(100), cint(100), cint(100), cint(100))
@@ -22,29 +28,76 @@ proc newStage1*(window: RenderWindow): Stage1 =
     result,
     window = window,
     title = "Stage 1 - Start From Nothing",
-    origin = getOrigin(window.size, boundary),
-    size = vec2(window.size.x + boundary.left + boundary.right, window.size.y + boundary.top + boundary.bottom)
+    origin = getOrigin(window.size),
   )
 
-  result.cursor = newGameCursor(result.assetLoader, ClickerCursor)
-  window.mouseCursor = result.cursor.cursor
+  result.clickerCursor = newGameCursor(result.assetLoader, ClickerCursor)
 
 proc load*(self: Stage1) =
+  self.background = self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("background_1-1.png")
+  )
+  echo "tex size: ", self.background.texture.size.x, " ", self.background.texture.size.y
+
+  self.background.scale = vec2(1, 1)
+  self.background.position = vec2(0, 0)
+
   self.gameMenu = newGameMenu(self.assetLoader, self.size)
 
   let sucSprite = self.assetLoader.newSprite(
     self.assetLoader.newImageAsset("basic-succ.png"),
   )
-  sucSprite.position = vec2(0, 0)
-  let suc = newEntity(suc_sprite)
+  sucSprite.position = vec2(338, 240)
+  let suc = newSucculent(suc_sprite)
+  self.entities.add(Entity(suc))
 
-  self.entities.add(suc)
+  let antSprite = self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("ant-sprite.png"),
+  )
+  antSprite.position = vec2(500, 400)
+
+  let ant = Ant(sprite: ant_sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, hea lth: 15)
+  self.entities.add(Entity(ant))
+
+  let nearestSuc: Succulent = ant.getTargetSuc(self.entities)
   # let ant1, ant2, ant3 = delayedCreate(Ant() ...
   #
+
+proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind) =
+  case kind:
+  of Clicker:
+    window.mouseCursor = self.clickerCursor.cursor
+  else: discard
+
+proc pollEvent*(self: Stage1, window: RenderWindow) =
+  var event: Event
+  while window.poll_event(event):
+    case event.kind
+    of EventType.Closed:
+      window.close()
+    of EventType.KeyPressed:
+      case event.key.code
+      of KeyCode.Escape:
+        window.close()
+      else: discard
+    of EventType.MouseButtonPressed:
+      case event.mouseButton.button:
+      of MouseButton.Left:
+        echo "Mouse button event coords: "
+        echo window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view)
+        let (doesContain, maybeKind) = self.gameMenu.contains(window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view))
+        if doesContain:
+          assert maybeKind.isSome
+          echo maybeKind.get(), " menu item clicked"
+          self.handleMenuEvent(window, maybeKind.get())
+      else: discard
+    else: discard
+
 
 proc update*(self: Stage1) =
   self.Scene.update()
 
 proc draw*(self: Stage1, window: RenderWindow) =
+  window.draw(self.background)
   self.gameMenu.draw(window)
   self.Scene.draw(window)

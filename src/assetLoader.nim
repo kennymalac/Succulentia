@@ -36,7 +36,7 @@ type
     # Grlobal scale of all Sprites
     scale*: Vector2f
 
-proc newAssetLoader*(location: string, scale: Vector2f = vec2(2.0, 2.0)): AssetLoader =
+proc newAssetLoader*(location: string, scale: Vector2f = vec2(1.0, 1.0)): AssetLoader =
   result = AssetLoader(location: location, scale: scale)
 
 proc newImage*(self: AssetLoader, location: string): Image =
