@@ -1,23 +1,26 @@
 import csfml/audio
 
+import assetLoader
+
+static:
+  let soundKinds = {
+    ClickSound: "clickSound",
+    BugChompSound: "bugChompSound",
+    GameMusicSound: "gameMusicSound",
+    RunningWaterSound: "runningWaterSound"
+  }
+
 type
-  SoundAssetKind* = enum
-    ClickSound,
-    BugChompSound,
-    GameMusicSound,
-    RunningWaterSound
+  SoundRegistry* = ref object
+    clickSound: ClickSound
+    bugChompSound: BugChompSound
+    gameMusicSound: GameMusicSound
+    runningWaterSound: RunningWaterSound
 
-  SoundAsset* = ref SoundAssetObj
-  SoundAssetObj = object
-    buffer*: SoundBuffer
-    case kind*: SoundAssetKind
-    of ClickSound: discard
-    of BugChompSound: discard
-    of GameMusicSound: discard
-    of RunningWaterSound: discard
+proc newSoundRegistry*(assetLoader: AssetLoader): SoundRegistry =
+  new result
+  for kind, key in kindMap.items:
+    result[key] = assetLoader.newSoundAsset(kind)
 
-# even though these are static for right now, some sound assets will have round robin behavior
-let ClickSoundLocation*: string = "click.wav"
-let BugChompSoundLocation*: string = "bug_chomp1.wav"
-let GameMusicSoundLocation*: string = "mus_game.ogg"
-let RunningWaterSoundLocation*: string = "water1.ogg"
+proc getSound*(kind: SoundAssetKind): SoundAsset =
+  return newSound(soundKinds[kind])

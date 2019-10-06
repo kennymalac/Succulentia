@@ -1,13 +1,34 @@
 import strformat
+import os
 
 import csfml, csfml/audio
-
-import soundRegistry
 
 type
   ImageAsset* = ref object
     texture*: Texture
     size*: Vector2i
+
+type
+  SoundAssetKind* = enum
+    ClickSound,
+    BugChompSound,
+    GameMusicSound,
+    RunningWaterSound
+
+  SoundAsset* = ref SoundAssetObj
+  SoundAssetObj = object
+    buffer*: SoundBuffer
+    case kind*: SoundAssetKind
+    of ClickSound: discard
+    of BugChompSound: discard
+    of GameMusicSound: discard
+    of RunningWaterSound: discard
+
+# even though these are static for right now, some sound assets will have round robin behavior
+let ClickSoundLocation*: string = "click.wav"
+let BugChompSoundLocation*: string = "bug_chomp1.wav"
+let GameMusicSoundLocation*: string = "mus_game.ogg"
+let RunningWaterSoundLocation*: string = "water1.ogg"
 
 type
   AssetLoader* = ref object
@@ -19,13 +40,11 @@ proc newAssetLoader*(location: string, scale: Vector2f = vec2(1.0, 1.0)): AssetL
   result = AssetLoader(location: location)
 
 proc newImageAsset*(self: AssetLoader, location: string): ImageAsset =
-  echo fmt"{self.location}/graphics/{location}"
-  result = ImageAsset(texture: new_Texture(fmt"{self.location}/graphics/{location}"))
+  result = ImageAsset(texture: new_Texture(joinPath(self.location, "graphics", location)))
   result.size = result.texture.size
 
 proc newImageAsset*(self: AssetLoader, location: string, size: Vector2i): ImageAsset =
-  echo fmt"{self.location}/graphics/{location}"
-  result = ImageAsset(texture: new_Texture(fmt"{self.location}/graphics/{location}"))
+  result = ImageAsset(texture: new_Texture(joinPath(self.location, "graphics", location)))
   result.size = size
 
 proc newSprite*(self: AssetLoader, image: ImageAsset): Sprite =
@@ -33,6 +52,9 @@ proc newSprite*(self: AssetLoader, image: ImageAsset): Sprite =
   # result.origin = vec2(image.size.x/2, image.size.y/2)
   # result.scale = self.scale
 
+
+# PLEASE don't use newSoundAsset - This is used internally by SoundRegistry!
+# Initialize a Sound registry and use getSound from that so that each sound instance has a single SoundBuffer
 proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
   var location: string = ""
 
@@ -42,8 +64,8 @@ proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
     of GameMusicSound: location = GameMusicSoundLocation
     of RunningWaterSound: location = RunningWaterSoundLocation
 
-  result = SoundAsset(buffer: newSoundBuffer(fmt"{self.location}/sounds/{location}"))
+  result = SoundAsset(buffer: newSoundBuffer(joinPath(self.location, "sounds", location)))
 
-proc getSound*(self: SoundAsset): Sound =
+proc newSound*(self: SoundAsset): Sound =
   result = newSound()
   result.buffer = self.buffer
