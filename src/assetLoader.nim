@@ -2,13 +2,12 @@ import strformat
 
 import csfml, csfml/audio
 
+import soundRegistry
+
 type
   ImageAsset* = ref object
     texture*: Texture
     size*: Vector2i
-
-  SoundAsset* = ref object
-    sound*: Sound
 
 type
   AssetLoader* = ref object
@@ -34,5 +33,17 @@ proc newSprite*(self: AssetLoader, image: ImageAsset): Sprite =
   # result.origin = vec2(image.size.x/2, image.size.y/2)
   # result.scale = self.scale
 
-proc newSoundAsset*(self: AssetLoader, location: string): SoundAsset =
-  discard
+proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
+  var location: string = ""
+
+  case kind:
+    of ClickSound: location = ClickSoundLocation
+    of BugChompSound: location = BugChompSoundLocation
+    of GameMusicSound: location = GameMusicSoundLocation
+    of RunningWaterSound: location = RunningWaterSoundLocation
+
+  result = SoundAsset(buffer: newSoundBuffer(fmt"{self.location}/sounds/{location}"))
+
+proc getSound*(self: SoundAsset): Sound =
+  result = newSound()
+  result.buffer = self.buffer
