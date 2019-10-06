@@ -34,10 +34,13 @@ type
   AssetLoader* = ref object
     location*: string
     # Grlobal scale of all Sprites
-    scale*: Vector2i
+    scale*: Vector2f
 
-proc newAssetLoader*(location: string, scale: Vector2f = vec2(1.0, 1.0)): AssetLoader =
-  result = AssetLoader(location: location)
+proc newAssetLoader*(location: string, scale: Vector2f = vec2(2.0, 2.0)): AssetLoader =
+  result = AssetLoader(location: location, scale: scale)
+
+proc newImage*(self: AssetLoader, location: string): Image =
+  result = newImage(joinPath(self.location, "graphics", location))
 
 proc newImageAsset*(self: AssetLoader, location: string): ImageAsset =
   result = ImageAsset(texture: new_Texture(joinPath(self.location, "graphics", location)))
@@ -50,8 +53,10 @@ proc newImageAsset*(self: AssetLoader, location: string, size: Vector2i): ImageA
 proc newSprite*(self: AssetLoader, image: ImageAsset): Sprite =
   result = new_Sprite(image.texture)
   # result.origin = vec2(image.size.x/2, image.size.y/2)
-  # result.scale = self.scale
+  result.scale = self.scale
 
+proc scaledSize*(self: Sprite): Vector2f =
+  result = vec2(cfloat(self.texture.size.x) * self.scale.x, cfloat(self.texture.size.y) * self.scale.y)
 
 # PLEASE don't use newSoundAsset - This is used internally by SoundRegistry!
 # Initialize a Sound registry and use getSound from that so that each sound instance has a single SoundBuffer

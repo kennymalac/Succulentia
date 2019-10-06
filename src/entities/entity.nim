@@ -1,6 +1,8 @@
 import csfml
 import times
 
+import ../assetLoader
+
 type
   Entity* = ref object of RootObj
     sprite*: Sprite
@@ -9,7 +11,7 @@ type
 
 proc initEntity*(self: Entity, sprite: Sprite) =
   self.sprite = sprite
-  self.rect = rect(sprite.position.x - 15, sprite.position.y - 15, cfloat(sprite.texture.size.x), cfloat(sprite.texture.size.y))
+  self.rect = rect(sprite.position.x - 15, sprite.position.y - 15, cfloat(sprite.scaledSize.x), cfloat(sprite.scaledSize.y))
   self.interRect = rect(0, 0, 0, 0)
 
 proc initEntity*(self: Entity, sprite: Sprite, rect: FloatRect) =

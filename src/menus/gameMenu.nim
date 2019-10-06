@@ -41,19 +41,19 @@ proc newGameMenu*(assetLoader: AssetLoader, size: Vector2i): GameMenu =
   result = GameMenu(assetLoader: assetLoader)
   result.items = @[MenuItem(result.newGameMenuItem(Clicker)), MenuItem(result.newGameMenuItem(Shovel)), MenuItem(result.newGameMenuItem(WateringCan))]
 
-  let yOffsetFactor = 10
+  let yOffsetFactor = cfloat(10)
 
   let itemsLength = result.items.len
 
   let leftBottomCornerTop = (
-    size.x - result.items[0].sprite.texture.size.x - 10,
-    size.y - result.items[0].sprite.texture.size.y * itemsLength - yOffsetFactor * itemsLength
+    cfloat(size.x) - result.items[0].sprite.scaledSize.x - cfloat(10),
+    cfloat(size.y) - result.items[0].sprite.scaledSize.y * cfloat(itemsLength) - yOffsetFactor * cfloat(itemsLength)
   )
 
-  var yOffset = 0
+  var yOffset = cfloat(0.0)
   for item in result.items:
-    item.sprite.position = vec2(leftBottomCornerTop[0], leftBottomCornerTop[1] + yOffset)
-    yOffset += item.sprite.texture.size.y + yOffsetFactor
+    item.sprite.position = vec2(leftBottomCornerTop[0], leftBottomCornerTop[1] + cfloat(yOffset))
+    yOffset += item.sprite.scaledSize.y + yOffsetFactor
 
 proc update*(self: GameMenu, dt: times.Duration) =
   discard
