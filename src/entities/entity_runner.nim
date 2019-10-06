@@ -28,14 +28,13 @@ var sucs: seq[Entity]
 sucs = @[ (Entity) suc ]
 
 ant = Ant(sprite: ant_sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 15)
-let nearestSuc: Succulent = ant.getNearestSuc(sucs)
+let nearestSuc: Succulent = ant.getTargetSuc(sucs)
 
 while window.open:
   window.clear(color(112, 197, 206))
   window.draw(suc.sprite)
   window.draw(ant.sprite)
-  ((Ant) ant).updateDirection(nearestSuc)
-  ((Ant) ant).move()
+  ant.update(sucs)
   window.display()
 
 ant.print()
