@@ -24,20 +24,25 @@ type
 type
   Bee* = ref object of Enemy
 
-proc attack*(self: Enemy, direction: Vector2i, succulent: Succulent) =
+proc attack*(self: Enemy) =
   # attack logic
   # attack animation
   # attack direction
-  succulent.health -= self.damage
+  self.targetSuc.health -= self.damage
+
+proc rotate(self: Enemy) =
+  self.sprite.rotation = vector_utils.vAngle(self.sprite.position, self.targetSuc.sprite.position)
 
 proc move(self: Enemy) =
   # TODO: stop moving when collides and start attacking 
   var moveVector: Vector2f = vec2(self.direction.x, self.direction.y)
   moveVector.x *= self.speed
   moveVector.y *= self.speed
+  self.rotate()
   self.sprite.move(moveVector)
   if self.rect.intersects(self.targetSuc.rect, self.interRect):
     self.isAttacking = true
+
 
 proc updateDirection(self: Enemy, entity: Entity) =
   self.direction = vector_utils.normalize(entity.sprite.position - self.sprite.position)

@@ -11,7 +11,8 @@ type
 
 proc initEntity*(self: Entity, sprite: Sprite) =
   self.sprite = sprite
-  self.rect = rect(sprite.position.x - 15, sprite.position.y - 15, cfloat(sprite.scaledSize.x), cfloat(sprite.scaledSize.y))
+  self.sprite.origin = vec2(cfloat(sprite.scaledSize.x / 2), cfloat(sprite.scaledSize.y) / 2)
+  self.rect = rect(sprite.position.x, sprite.position.y, cfloat(sprite.scaledSize.x) / 2, cfloat(sprite.scaledSize.y) / 2)
   self.interRect = rect(0, 0, 0, 0)
 
 proc initEntity*(self: Entity, sprite: Sprite, rect: FloatRect) =
