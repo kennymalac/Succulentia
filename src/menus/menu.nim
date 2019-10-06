@@ -1,3 +1,5 @@
+import times
+
 import csfml
 
 import ../assetLoader
@@ -15,6 +17,9 @@ proc onClick*(self: MenuItem) =
 
 proc newMenu*(items: seq[MenuItem], assetLoader: AssetLoader): Menu =
   result = Menu(items: items, assetLoader: assetLoader)
+
+proc update(self: Menu, dt: times.Duration) =
+  discard
 
 proc draw(self: Menu, window: RenderWindow) =
   discard

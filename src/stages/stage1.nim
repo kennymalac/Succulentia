@@ -25,7 +25,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   )
 
 proc load*(self: Stage1) =
-  self.gameMenu = newGameMenu(self.assetLoader)
+  self.gameMenu = newGameMenu(self.assetLoader, self.size)
 
   let sucSprite = self.assetLoader.newSprite(
     self.assetLoader.newImageAsset("basic-succ.png"),
