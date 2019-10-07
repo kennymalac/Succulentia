@@ -22,6 +22,18 @@ type
     soundRegistry: SoundRegistry
     gameMenu: GameMenu
     clickerCursor: GameCursor
+    shovelCursor: GameCursor
+    fullWateringCanCursor: GameCursor
+    emptyWateringCanCursor: GameCursor
+
+proc initCursors*(self: Stage1) =
+  proc newCursor(kind: GameCursorKind, variant: string = ""): GameCursor = newGameCursor(self.assetLoader, kind, variant)
+
+  self.clickerCursor = newCursor(ClickerCursor)
+  self.shovelCursor = newCursor(ShovelCursor)
+  self.fullWateringCanCursor = newCursor(WateringCanCursor)
+  self.emptyWateringCanCursor = newCursor(WateringCanCursor, "empty")
+
 
 proc newStage1*(window: RenderWindow): Stage1 =
   let boundary: Boundary = (cint(100), cint(100), cint(100), cint(100))
@@ -34,8 +46,10 @@ proc newStage1*(window: RenderWindow): Stage1 =
     origin = getOrigin(window.size),
   )
 
-  result.clickerCursor = newGameCursor(result.assetLoader, ClickerCursor)
+  result.initCursors()
   result.soundRegistry = newSoundRegistry(result.assetLoader)
+
+  window.mouseCursor = result.clickerCursor.cursor
 
 proc load*(self: Stage1) =
   self.background = self.assetLoader.newSprite(
@@ -79,7 +93,11 @@ proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind)
   case kind:
   of Clicker:
     window.mouseCursor = self.clickerCursor.cursor
-  else: discard
+  of Shovel:
+    window.mouseCursor = self.shovelCursor.cursor
+  of WateringCan:
+    # TODO emptying logic
+    window.mouseCursor = self.fullWateringCanCursor.cursor
 
   self.gameMenu.clickSound.play()
 

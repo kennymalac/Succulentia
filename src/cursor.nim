@@ -6,7 +6,7 @@ type
   GameCursorKind* = enum
     ClickerCursor,
     ShovelCursor,
-    WaterBucketCursor
+    WateringCanCursor
 
   GameCursor* = ref GameCursorObj
   GameCursorObj = object
@@ -14,17 +14,21 @@ type
     case kind*: GameCursorKind
     of ClickerCursor: discard
     of ShovelCursor: discard
-    of WaterBucketCursor: discard
+    of WateringCanCursor: discard
 
-proc newGameCursor*(assetLoader: AssetLoader, kind: GameCursorKind): GameCursor =
+proc newGameCursor*(assetLoader: AssetLoader, kind: GameCursorKind, variant: string = ""): GameCursor =
   new result
 
   var location = ""
 
   case kind:
     of ClickerCursor: location = "cursor-clicker-1.png"
-    of ShovelCursor: discard
-    of WaterBucketCursor: discard
+    of ShovelCursor: location = "cursor-shovel-1.png"
+    of WateringCanCursor:
+      if variant == "empty":
+        location = "cursor-watercan-empty-1.png"
+      else:
+        location = "cursor-watercan-full-1.png"
 
   echo location
   let image = assetLoader.newImage(location);
