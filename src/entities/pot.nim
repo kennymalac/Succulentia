@@ -1,27 +1,29 @@
 import csfml
 import entity, succulent
+import options
 
 type
   Pot* = ref object of Entity
+    dirtSprite*: Sprite
     health*: int
-    suc*: Succulent
+    suc*: Option[Succulent]
     hasDirt*: bool
     hasSuc*: bool
 
-proc newPot*(self: Pot, sprite: Sprite): Pot =
-  result = Pot(health: 100, suc: nil, hasDirt: false, hasSuc: false)
+proc newPot*(sprite: Sprite, dirtSprite: Sprite): Pot =
+  result = Pot(health: 100, suc: none(Succulent), hasDirt: false, hasSuc: false)
   initEntity(result, sprite)
 
-proc newPot*(self: Pot, sprite: Sprite, suc: Succulent): Pot =
+proc newPot*(sprite: Sprite, suc: Option[Succulent]): Pot =
   result = Pot(health: 100)
   result.suc = suc
   initEntity(result, sprite)
 
-proc placeSuc*(self: Pot, suc: Succulent): =
+proc placeSuc*(self: Pot, suc: Option[Succulent]) =
   self.suc = suc
   self.hasSuc = true
 
-proc placeDirt*(self: Pot, sprite: Sprite): =
-  self.sprite = sprite
+proc placeDirt*(self: Pot) =
+  self.sprite = self.dirtSprite
   self.hasDirt = true
 
