@@ -11,7 +11,7 @@ type
     hasSuc*: bool
 
 proc newPot*(sprite: Sprite, dirtSprite: Sprite): Pot =
-  result = Pot(health: 100, suc: none(Succulent), hasDirt: false, hasSuc: false)
+  result = Pot(dirtSprite: dirtSprite, health: 100, suc: none(Succulent), hasDirt: false, hasSuc: false)
   initEntity(result, sprite)
 
 proc newPot*(sprite: Sprite, suc: Option[Succulent]): Pot =
