@@ -17,3 +17,6 @@ proc placeDirt*(self: Pot) =
   self.sprite = self.dirtSprite
   self.hasDirt = true
 
+proc setPosition*(self: Pot, v: Vector2f) =
+  self.sprite.position = v
+  self.dirtSprite.position = v
