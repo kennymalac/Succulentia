@@ -23,8 +23,7 @@ type
     wateringSound: Sound
     gameMenu: GameMenu
     isMouseDown: bool
-    currentCursor: GameCursorKind
-    cursorSprite: Sprite
+    currentCursor: GameCursor
     clickerCursor: GameCursor
     shovelCursor: GameCursor
     fullWateringCanCursor: GameCursor
@@ -33,7 +32,7 @@ type
 proc initCursors*(self: Stage1) =
   proc newCursor(kind: GameCursorKind, variant: string = ""): GameCursor = newGameCursor(self.assetLoader, kind, variant)
 
-  self.currentCursor = ClickerCursor
+  self.currentCursor = self.clickerCursor
   self.clickerCursor = newCursor(ClickerCursor)
   self.shovelCursor = newCursor(ShovelCursor)
   self.fullWateringCanCursor = newCursor(WateringCanCursor)
@@ -55,7 +54,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.soundRegistry = newSoundRegistry(result.assetLoader)
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
 
-  result.cursorSprite = result.clickerCursor.sprite
+  result.currentCursor = result.clickerCursor
 
 
 proc load*(self: Stage1) =
@@ -104,15 +103,12 @@ proc load*(self: Stage1) =
 proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind) =
   case kind:
   of Clicker:
-    self.currentCursor = ClickerCursor
-    self.cursorSprite = self.clickerCursor.sprite
+    self.currentCursor = self.clickerCursor
   of Shovel:
-    self.currentCursor = ShovelCursor
-    self.cursorSprite = self.shovelCursor.sprite
+    self.currentCursor = self.shovelCursor
   of WateringCan:
     # TODO emptying logic
-    self.currentCursor = WateringCanCursor
-    self.cursorSprite = self.fullWateringCanCursor.sprite
+    self.currentCursor = self.fullWateringCanCursor
 
   self.gameMenu.clickSound.play()
 
@@ -136,7 +132,7 @@ proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
   for entity in self.entities:
     if entity of Enemy:
       # TODO make Cursor have a rect because the point is too small
-      if entity.rect.contains(coords): maybeEnemy = some(Enemy(entity))
+      if entity.rect.intersects(self.currentCursor.rect, self.currentCursor.interRect): maybeEnemy = some(Enemy(entity))
 
   if not maybeEnemy.isSome: return false
 
@@ -160,8 +156,8 @@ proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, eve
   if pressed:
     # First action to dispatch wins
     if self.checkGameMenuClickEvent(window, coords): return
-    if self.currentCursor == ClickerCursor and self.checkPlayerAttackEvent(coords): return
-    if self.currentCursor == WateringCanCursor and self.checkPlayerWateringEvent(coords): return
+    if self.currentCursor.kind == ClickerCursor and self.checkPlayerAttackEvent(coords): return
+    if self.currentCursor.kind == WateringCanCursor and self.checkPlayerWateringEvent(coords): return
   # Mouse was released
   else:
     self.wateringSound.stop()
@@ -201,9 +197,15 @@ proc update*(self: Stage1) =
   self.Scene.update()
 
 proc draw*(self: Stage1, window: RenderWindow) =
-  self.cursorSprite.position = window.mapPixelToCoords(Vector2i(mouse_getPosition(window)), self.view)
+  let mouseCoords = window.mapPixelToCoords(mouse_getPosition(window), self.view)
+  self.currentCursor.sprite.position = mouseCoords
+  self.currentCursor.updateRectPosition()
+
+  # var mouseRect = newRectangleShape(vec2(self.currentCursor.rect.width, self.currentCursor.rect.height))
+  # mouseRect.position = vec2(self.currentCursor.rect.left, self.currentCursor.rect.top)
 
   window.draw(self.background)
   self.gameMenu.draw(window)
   self.Scene.draw(window)
-  window.draw(self.cursorSprite)
+  window.draw(self.currentCursor.sprite)
+  # window.draw(mouseRect)

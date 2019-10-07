@@ -12,6 +12,8 @@ type
   GameCursorObj = object
     cursor*: Cursor
     sprite*: Sprite
+    rect*: FloatRect
+    interRect*: FloatRect
     case kind*: GameCursorKind
     of ClickerCursor: discard
     of ShovelCursor: discard
@@ -35,4 +37,17 @@ proc newGameCursor*(assetLoader: AssetLoader, kind: GameCursorKind, variant: str
   let image = assetLoader.newImage(location);
   result.cursor = newCursor(image.pixelsPtr, image.size, vec2(cint(image.size.x/2), cint(image.size.y/2)))
   result.sprite = assetLoader.newSprite(assetLoader.newImageAsset(location))
-  result.sprite.origin = vec2(result.sprite.texture.size.x/2, result.sprite.texture.size.y/2)
+  result.sprite.origin = vec2(cfloat(result.sprite.scaledSize.x)/2, cfloat(result.sprite.scaledSize.y) / 2)
+  if kind == ClickerCursor:
+    # Rect should be slightly smaller
+    result.rect = rect(result.sprite.position.x, result.sprite.position.y, cfloat(result.sprite.texture.size.x) - 10, cfloat(result.sprite.texture.size.y)-10)
+  else:
+    result.rect = rect(result.sprite.position.x, result.sprite.position.y, cfloat(result.sprite.texture.size.x), cfloat(result.sprite.texture.size.y))
+
+  result.interRect = rect(0, 0, 0, 0)
+
+proc updateRectPosition*(self: GameCursor) =
+  if self.kind == ClickerCursor:
+    self.rect = rect(self.sprite.position.x-5, self.sprite.position.y-5, self.sprite.scaledSize.x-10, self.sprite.scaledSize.y-10)
+  else:
+    self.rect = rect(self.sprite.position.x, self.sprite.position.y, self.sprite.scaledSize.x, self.sprite.scaledSize.y)
