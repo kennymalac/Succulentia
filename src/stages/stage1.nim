@@ -3,6 +3,7 @@ import times
 import sequtils
 import options
 import os
+import random
 
 import csfml, csfml/audio
 
@@ -37,6 +38,7 @@ type
     shovelCursor: GameCursor
     fullWateringCanCursor: GameCursor
     emptyWateringCanCursor: GameCursor
+    chance: float 
 
 proc initCursors*(self: Stage1) =
   proc newCursor(kind: GameCursorKind, variant: string = ""): GameCursor = newGameCursor(self.assetLoader, kind, variant)
@@ -72,6 +74,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.scoreText.characterSize = 14
 
   result.currentCursor = result.clickerCursor
+  result.chance = 3000 
 
 
 proc load*(self: Stage1) =
@@ -252,7 +255,40 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
     else: discard
 
 
+proc spawn*(self: Stage1, chance: float) =
+  # ant frequency: 15%
+  # mealy frequency: 5%
+  # spider frequency: 4%
+  # beetle frequency: 1%
+  randomize()
+  let bugRand  = rand(chance)
+  if bugRand < 20:
+    let antSprite = self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("ant-sprite.png")
+    )
+    antSprite.position = vec2(rand(640), 480)
+    let ant = newAnt(antSprite, self.soundRegistry)
+    self.entities.add(Entity(ant))
+  elif bugRand > 15 and bugRand < 25:
+    let mealySprite = self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("mealy-sprite.png")
+    )
+    mealySprite.position = vec2(rand(640), 480)
+
+    let mealy = newMealy(mealy_sprite, self.soundRegistry)
+    self.entities.add(Entity(mealy))
+
+ # elif bugRand > 25 and bugRand < 30:
+ #   let spiderSprite = self.assetLoader.newSprite(
+ #     self.assetLoader.newImageAsset("spider-sprite.png")
+ #   )
+ #   let spider = newSpider(spiderSprite, self.soundRegistry)
+ #   spiderSprite.position = vec2(rand(640), 480)
+ #   self.entities.add((Entity(spider))
+
 proc update*(self: Stage1, window: RenderWindow) =
+  self.chance -= 0.001
+  self.spawn(self.chance)
   let mouseCoords = window.mapPixelToCoords(mouse_getPosition(window), self.view)
   self.currentCursor.sprite.position = mouseCoords
   self.currentCursor.updateRectPosition()
@@ -287,3 +323,5 @@ proc draw*(self: Stage1, window: RenderWindow) =
 
   window.draw(self.currentCursor.sprite)
   # window.draw(mouseRect)
+  
+
