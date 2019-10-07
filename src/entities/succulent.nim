@@ -41,6 +41,8 @@ proc randomSuccSprite*(assetLoader: AssetLoader): Sprite =
 proc setPot*(self: Succulent, pot: Option[Pot]) =
   self.pot = pot
   self.sprite.position = vec2(get(self.pot).sprite.position.x, get(self.pot).sprite.position.y - float(get(self.pot).sprite.scaledSize.y) - 12)
+  self.rect = rect(self.sprite.position.x - 5, self.sprite.position.y - 5, cfloat(self.sprite.scaledSize.x) / 2, cfloat(self.sprite.scaledSize.y) / 2)
+
 
 proc setSucPosition(self: Succulent) =
   self.sprite.position = get(self.pot).sprite.position
