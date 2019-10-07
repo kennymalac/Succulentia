@@ -21,6 +21,7 @@ type
     boundary: Boundary
     soundRegistry: SoundRegistry
     gameMenu: GameMenu
+    currentCursor: GameCursorKind
     clickerCursor: GameCursor
     shovelCursor: GameCursor
     fullWateringCanCursor: GameCursor
@@ -29,6 +30,7 @@ type
 proc initCursors*(self: Stage1) =
   proc newCursor(kind: GameCursorKind, variant: string = ""): GameCursor = newGameCursor(self.assetLoader, kind, variant)
 
+  self.currentCursor = ClickerCursor
   self.clickerCursor = newCursor(ClickerCursor)
   self.shovelCursor = newCursor(ShovelCursor)
   self.fullWateringCanCursor = newCursor(WateringCanCursor)
@@ -92,11 +94,14 @@ proc load*(self: Stage1) =
 proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind) =
   case kind:
   of Clicker:
+    self.currentCursor = ClickerCursor
     window.mouseCursor = self.clickerCursor.cursor
   of Shovel:
+    self.currentCursor = ShovelCursor
     window.mouseCursor = self.shovelCursor.cursor
   of WateringCan:
     # TODO emptying logic
+    self.currentCursor = WateringCanCursor
     window.mouseCursor = self.fullWateringCanCursor.cursor
 
   self.gameMenu.clickSound.play()
@@ -139,7 +144,7 @@ proc handleLeftMouseEvent(self: Stage1, window: RenderWindow, event: Event) =
 
   # First action to dispatch wins
   if self.checkGameMenuClickEvent(window, coords): return
-  if self.checkPlayerAttackEvent(coords): return
+  if self.currentCursor == ClickerCursor and self.checkPlayerAttackEvent(coords): return
 
 proc pollEvent*(self: Stage1, window: RenderWindow) =
   var event: Event
