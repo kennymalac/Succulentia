@@ -51,7 +51,6 @@ proc move(self: Enemy) =
   if self.rect.intersects(self.targetSuc.rect, self.interRect):
     self.isAttacking = true
 
-
 proc updateDirection(self: Enemy, entity: Entity) =
   self.direction = vector_utils.normalize(entity.sprite.position - self.sprite.position)
 
