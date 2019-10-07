@@ -194,7 +194,13 @@ proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
     if enemy of Ant:
       self.score += 1
     elif enemy of Mealy:
+      self.score += 3
+    elif enemy of Bee:
       self.score += 5
+    elif enemy of Beetle:
+      self.score += 15
+    elif enemy of Spider:
+      self.score += 8
 
     enemy.isDead = true
     enemy.deathSound.play()
