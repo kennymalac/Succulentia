@@ -1,8 +1,10 @@
-import entities/entity
-import assetLoader
-
 import times
+
 import csfml #, csfml/ext
+
+import entities/entity
+import entities/enemy
+import assetLoader
 
 type
   Scene* = ref object of RootObj
@@ -38,7 +40,10 @@ proc update*(self: Scene) =
   var dt = self.currentTime - self.previousTime
 
   for i, entity in self.entities:
-    entity.update(dt)
+    if entity of Enemy:
+      Enemy(entity).update(dt, self.entities)
+    else:
+      entity.update(dt)
 
 proc draw*(self: Scene, window: RenderWindow) =
   for i, entity in self.entities:
