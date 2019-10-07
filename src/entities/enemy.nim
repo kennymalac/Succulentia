@@ -8,6 +8,9 @@ import times
 import math, random
 import vector_utils
 
+import ../assetLoader
+import ../soundRegistry
+
 type
   Enemy* = ref object of Entity
     direction*: Vector2f
@@ -30,8 +33,8 @@ type
 proc initEnemy*(enemy: Enemy, sprite: Sprite) =
   initEntity(enemy, sprite)
 
-proc newAnt*(sprite: Sprite): Ant =
-  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 15, isAttacking: false)
+proc newAnt*(sprite: Sprite, soundRegistry: SoundRegistry): Ant =
+  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 15, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1))
   initEnemy(result, sprite)
 
 # Returns whether or not Succulent reached 0 health
@@ -39,6 +42,8 @@ proc attack*(self: Enemy, targetSuc: Succulent): bool =
   # attack logic
   # attack animation
   # attack direction
+  self.attackSound.play()
+
   targetSuc.health -= self.damage
   return targetSuc.health <= 0
 
@@ -108,8 +113,6 @@ proc getTargetSuc*(self: Enemy, entities: seq[Entity]): Succulent =
 
 proc update*(self: Enemy, dt: times.Duration, entities: seq[Entity]) =
   self.updateRectPosition()
-
-  self.attackSpeed = initDuration(seconds = 1)
 
   if not self.isAttacking:
     let hasSucculent = entities.anyIt(it of Succulent)

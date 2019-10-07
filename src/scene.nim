@@ -36,6 +36,7 @@ proc load*(self: Scene) =
   discard
 
 proc update*(self: Scene) =
+  self.previousTime = self.currentTime
   self.currentTime = getTime()
   var dt = self.currentTime - self.previousTime
 

@@ -68,7 +68,7 @@ proc load*(self: Stage1) =
   )
   antSprite.position = vec2(500, 400)
 
-  let ant = newAnt(ant_sprite)
+  let ant = newAnt(ant_sprite, self.soundRegistry)
   self.entities.add(Entity(ant))
 
   let nearestSuc: Succulent = ant.getTargetSuc(self.entities)
