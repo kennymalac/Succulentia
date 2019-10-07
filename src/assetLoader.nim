@@ -44,7 +44,7 @@ proc newImage*(self: AssetLoader, location: string): Image =
 
 proc newImageAsset*(self: AssetLoader, location: string): ImageAsset =
   result = ImageAsset(texture: new_Texture(joinPath(self.location, "graphics", location)))
-  result.size = result.texture.size
+  # result.size = result.texture.size
 
 proc newImageAsset*(self: AssetLoader, location: string, size: Vector2i): ImageAsset =
   result = ImageAsset(texture: new_Texture(joinPath(self.location, "graphics", location)))

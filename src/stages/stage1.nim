@@ -1,3 +1,4 @@
+import sequtils
 import options
 
 import csfml, csfml/audio
@@ -5,12 +6,12 @@ import csfml, csfml/audio
 import ../scene
 import ../assetLoader
 import ../soundRegistry
-import ../entities/entity
-import ../menus/gameMenu
 import ../cursor
-
+import ../menus/gameMenu
+import ../entities/entity
 import ../entities/enemy
 import ../entities/succulent
+
 
 import stage
 
@@ -48,18 +49,26 @@ proc load*(self: Stage1) =
   self.gameMenu = newGameMenu(self.assetLoader, self.soundRegistry, self.size)
 
   let sucSprite = self.assetLoader.newSprite(
-    self.assetLoader.newImageAsset("basic-succ.png"),
+    self.assetLoader.newImageAsset("succ-andro-5.png"),
   )
   sucSprite.position = vec2(338, 240)
   let suc = newSucculent(suc_sprite)
   self.entities.add(Entity(suc))
+
+  let sucSprite2 = self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("basic-succ.png"),
+  )
+  sucSprite2.position = vec2(538, 180)
+  let suc2 = newSucculent(sucSprite2)
+  self.entities.add(Entity(suc2))
+
 
   let antSprite = self.assetLoader.newSprite(
     self.assetLoader.newImageAsset("ant-sprite.png"),
   )
   antSprite.position = vec2(500, 400)
 
-  let ant = Ant(sprite: ant_sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 15)
+  let ant = newAnt(ant_sprite)
   self.entities.add(Entity(ant))
 
   let nearestSuc: Succulent = ant.getTargetSuc(self.entities)
@@ -100,6 +109,9 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
 
 
 proc update*(self: Stage1) =
+  # Delete last round of dead succs if any
+  self.entities.keepItIf(not it.isDead)
+
   self.Scene.update()
 
 proc draw*(self: Stage1, window: RenderWindow) =
