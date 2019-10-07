@@ -90,6 +90,7 @@ proc move(self: Enemy) =
   self.rotate()
   self.sprite.move(moveVector)
   self.updateRectPosition()
+
   if self.rect.intersects(targetSuc.rect, self.interRect):
     self.isAttacking = true
     self.resetAttackCounter()
@@ -149,6 +150,7 @@ proc update*(self: Enemy, dt: times.Duration, entities: seq[Entity]) =
         return
 
       self.maybeTargetSuc = some(self.getTargetSuc(entities))
+
     self.updateDirection(self.maybeTargetSuc.get())
     self.move()
 

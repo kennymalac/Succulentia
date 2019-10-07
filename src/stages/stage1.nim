@@ -29,6 +29,7 @@ type
     boundary: Boundary
     soundRegistry: SoundRegistry
     wateringSound: Sound
+    bugClickSound: Sound
     gameMenu: GameMenu
     isMouseDown: bool
     waterTimer: Duration
@@ -62,6 +63,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.initCursors()
   result.soundRegistry = newSoundRegistry(result.assetLoader)
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
+  result.bugClickSound = result.soundRegistry.getSound(BugClickSound)
   result.gameMusic = result.soundRegistry.getSound(StageGameMusic)
   result.waterTimer = initDuration(seconds = 0)
 
@@ -186,6 +188,7 @@ proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
   if not maybeEnemy.isSome: return false
 
   let enemy = maybeEnemy.get()
+  self.bugClickSound.play()
   enemy.health -= 10
   if enemy.health <= 0:
     if enemy of Ant:
