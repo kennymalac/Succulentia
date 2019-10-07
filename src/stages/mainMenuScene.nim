@@ -118,7 +118,7 @@ proc update*(self: MainMenuScene, window: RenderWindow) =
     self.startedGame = false
     return
 
-  self.Scene.update(window)
+  discard self.Scene.update(window)
 
 proc draw*(self: MainMenuScene, window: RenderWindow) =
   let mouseCoords = window.mapPixelToCoords(mouse_getPosition(window), self.view)

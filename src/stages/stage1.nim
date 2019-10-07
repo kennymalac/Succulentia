@@ -1,3 +1,4 @@
+import times
 import sequtils
 import options
 
@@ -23,7 +24,7 @@ type
     wateringSound: Sound
     gameMenu: GameMenu
     isMouseDown: bool
-    water: int
+    waterTimer: Duration
     currentCursor: GameCursor
     clickerCursor: GameCursor
     shovelCursor: GameCursor
@@ -54,7 +55,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.initCursors()
   result.soundRegistry = newSoundRegistry(result.assetLoader)
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
-  result.water = 100
+  result.waterTimer = initDuration(seconds = 0)
 
   result.currentCursor = result.clickerCursor
 
@@ -114,7 +115,7 @@ proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind)
 
   self.gameMenu.clickSound.play()
 
-proc checkGameMenuClickEvent(self: Stage1, window: RenderWindow, coords: Vector2f) : bool  =
+proc checkGameMenuClickEvent(self: Stage1, window: RenderWindow, coords: Vector2f) : bool =
   let (doesContain, maybeKind) = self.gameMenu.contains(coords)
   if doesContain:
     assert maybeKind.isSome
@@ -164,9 +165,14 @@ proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, eve
     if self.currentCursor.kind == WateringCanCursor and self.checkPlayerWateringEvent(coords): return
   # Mouse was released
   else:
-    if self.currentCursor.variant == "full" and self.wateringSound.status == Playing:
-      self.currentCursor = self.emptyWateringCanCursor
-    self.wateringSound.stop()
+    if self.currentCursor.variant == "full" and self.isMouseDown:
+      if self.waterTimer >= initDuration(seconds = 3):
+        self.waterTimer = initDuration(seconds = 0)
+        self.currentCursor = self.emptyWateringCanCursor
+      self.wateringSound.stop()
+
+    self.isMouseDown = false
+
 
 proc pollEvent*(self: Stage1, window: RenderWindow) =
   var event: Event
@@ -190,7 +196,6 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
     of EventType.MouseButtonReleased:
       case event.mouseButton.button:
       of MouseButton.Left:
-        self.isMouseDown = false
         self.handleLeftMouseEvent(false, window, event)
       else: discard
     else: discard
@@ -204,7 +209,15 @@ proc update*(self: Stage1, window: RenderWindow) =
   # Delete last round of dead succs if any
   self.entities.keepItIf(not it.isDead)
 
-  self.Scene.update(window)
+  let dt = self.Scene.update(window)
+
+  if self.isMouseDown and self.currentCursor.kind == WateringCanCursor and self.currentCursor.variant == "full":
+    self.waterTimer += dt
+
+  if self.waterTimer >= initDuration(seconds = 3):
+    self.waterTimer = initDuration(seconds = 0)
+    self.currentCursor = self.emptyWateringCanCursor
+    self.wateringSound.stop()
 
 proc draw*(self: Stage1, window: RenderWindow) =
   # var mouseRect = newRectangleShape(vec2(self.currentCursor.rect.width, self.currentCursor.rect.height))

@@ -38,7 +38,7 @@ proc load*(self: Scene) =
 proc pollEvent*(self: Scene, window: RenderWindow) =
   discard
 
-proc update*(self: Scene, window: RenderWindow) =
+proc update*(self: Scene, window: RenderWindow): Duration =
   self.previousTime = self.currentTime
   self.currentTime = getTime()
   var dt = self.currentTime - self.previousTime
@@ -48,6 +48,8 @@ proc update*(self: Scene, window: RenderWindow) =
       Enemy(entity).update(dt, self.entities)
     else:
       entity.update(dt)
+
+  return dt
 
 proc draw*(self: Scene, window: RenderWindow) =
   for i, entity in self.entities:
