@@ -30,6 +30,10 @@ type
     boundary: Boundary
     soundRegistry: SoundRegistry
     wateringSound: Sound
+    bugClickSound: Sound
+    potsNeedSuc: seq[tuple[pot: Pot, duration: Duration, notAdded: bool]]
+    plantSound: Sound
+    isGameOver: bool
     gameMenu: GameMenu
     isMouseDown: bool
     waterTimer: Duration
@@ -52,7 +56,7 @@ proc initCursors*(self: Stage1) =
 
 proc newStage1*(window: RenderWindow): Stage1 =
   let boundary: Boundary = (cint(100), cint(100), cint(100), cint(100))
-  result = Stage1(boundary: boundary)
+  result = Stage1(boundary: boundary, isGameOver: false)
 
   initScene(
     result,
@@ -64,6 +68,8 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.initCursors()
   result.soundRegistry = newSoundRegistry(result.assetLoader)
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
+  result.plantSound  = result.soundRegistry.getSound(SucculentPlantSound)
+  result.bugClickSound = result.soundRegistry.getSound(BugClickSound)
   result.gameMusic = result.soundRegistry.getSound(StageGameMusic)
   result.waterTimer = initDuration(seconds = 0)
 
@@ -104,8 +110,8 @@ proc load*(self: Stage1) =
 
   pot.setPosition(vec2(200, 200))
   pot2.setPosition(vec2(400, 400))
-  pot.placeDirt()
-  pot2.placeDirt()
+  #pot.placeDirt()
+  #pot2.placeDirt()
 
   self.entities.add(Entity(pot))
   self.entities.add(Entity(pot2))
@@ -189,12 +195,19 @@ proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
   if not maybeEnemy.isSome: return false
 
   let enemy = maybeEnemy.get()
+  self.bugClickSound.play()
   enemy.health -= 10
   if enemy.health <= 0:
     if enemy of Ant:
       self.score += 1
     elif enemy of Mealy:
+      self.score += 3
+    elif enemy of Bee:
       self.score += 5
+    elif enemy of Beetle:
+      self.score += 15
+    elif enemy of Spider:
+      self.score += 8
 
     enemy.isDead = true
     enemy.deathSound.play()
@@ -208,6 +221,23 @@ proc checkPlayerWateringEvent(self: Stage1, coords: Vector2f) : bool =
     self.wateringSound.play()
     # Hydrade plont if intersecting
   return true
+
+proc checkPlayerPlantEvent(self: Stage1, coords: Vector2f) : bool =
+  var maybePot = none(Pot)
+
+  for entity in self.entities:
+    if entity of Pot:
+      if entity.rect.intersects(self.currentCursor.rect, self.currentCursor.interRect): maybePot = some(Pot(entity))
+
+  if not maybePot.isSome: return false
+  let pot = maybePot.get()
+  if pot.hasDirt: return false
+
+  self.plantSound.play()
+
+  pot.placeDirt()
+  var theDuration = initDuration(seconds = 0)
+  self.potsNeedSuc.add((pot, theDuration, true))
 
 proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, event: Event) =
   let coords = window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view)
@@ -293,10 +323,29 @@ proc update*(self: Stage1, window: RenderWindow) =
   self.currentCursor.sprite.position = mouseCoords
   self.currentCursor.updateRectPosition()
 
+  if not self.isGameOver:
+    self.isGameOver = not self.entities.anyIt(it of Succulent)
+
+  if self.isGameover:
+    return
+
   # Delete last round of dead succs if any
   self.entities.keepItIf(not it.isDead)
 
   let dt = self.Scene.update(window)
+
+  self.potsNeedSuc.keepItIf(it[2])
+
+  for t in self.potsNeedSuc:
+    var (pot, timeSinceAdded, notAdded) = t
+    timeSinceAdded += dt
+    if timeSinceAdded >= initDuration(seconds = 3):
+      let sucSprite = randomSuccSprite(self.assetLoader)
+      let suc = newSucculent(suc_sprite, self.soundRegistry)
+      suc.setPot(some(pot))
+      self.entities.add(Entity(suc))
+
+      notAdded = false
 
   if self.isMouseDown and self.currentCursor.kind == WateringCanCursor and self.currentCursor.variant == "full":
     self.waterTimer += dt
@@ -322,6 +371,14 @@ proc draw*(self: Stage1, window: RenderWindow) =
   window.draw(self.scoreText)
 
   window.draw(self.currentCursor.sprite)
+
+  if self.isGameOver:
+    let gameOverText = newText("GAME OVER", self.font)
+    gameOverText.characterSize = 72
+    gameOverText.position = vec2(window.size.x/2 - cfloat(gameOverText.globalBounds.width/2), window.size.y/2 - cfloat(gameOverText.globalBounds.height/2))
+    window.draw(gameOverText)
+
+
   # window.draw(mouseRect)
   
 

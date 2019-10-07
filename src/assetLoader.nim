@@ -12,6 +12,7 @@ type
     MainMenuMusic,
     StageGameMusic,
     ClickSound,
+    BugClickSound,
     BugSpawnSpookySound,
     BugChompSound,
     BugChompSound2,
@@ -33,6 +34,7 @@ type
     of MainMenuMusic: discard
     of StageGameMusic: discard
     of ClickSound: discard
+    of BugClickSound: discard
     of SucculentPlantSound: discard
     of SucculentDeathSound: discard
     of BugSpawnSpookySound: discard
@@ -49,13 +51,14 @@ type
 
     # type RoundRobinAsset =
 
-# even though these are static for right now, some sound assets will have round robin behavior
+# even though these are static for right now, some sound assets will have round robin bephavior
 let MainMenuMusicLocation*: string = "mus_mainmenu.ogg"
 let StageGameMusicLocation*: string = "mus_game.ogg"
 let ClickSoundLocation*: string = "click.wav"
+let BugClickSoundLocation*: string = "bug_click.wav"
 let SucculentPlantSoundLocation*: string = "succ_plant1.wav"
 let SucculentDeathSoundLocation*: string = "succ_death.wav"
-let BugSpawnSpookySoundLocation*: string = "crawlie.wav"
+let BugSpawnSpookySoundLocation*: string = "cc.wav"
 let BugChompSoundLocation*: string = "bug_chomp1.wav"
 let BugChompSound2Location*: string = "bug_chomp2.wav"
 let BugChompSound3Location*: string = "bug_chomp3.wav"
@@ -107,6 +110,7 @@ proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
     of SucculentPlantSound: location = SucculentPlantSoundLocation
     of SucculentDeathSound: location = SucculentDeathSoundLocation
     of BugSpawnSpookySound: location = BugSpawnSpookySoundLocation
+    of BugClickSound: location = BugClickSoundLocation
     of BugChompSound: location = BugChompSoundLocation
     of BugChompSound2: location = BugChompSound2Location
     of BugChompSound3: location = BugChompSound3Location
