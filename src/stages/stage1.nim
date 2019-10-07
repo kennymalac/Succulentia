@@ -24,6 +24,7 @@ type
     gameMenu: GameMenu
     isMouseDown: bool
     currentCursor: GameCursorKind
+    cursorSprite: Sprite
     clickerCursor: GameCursor
     shovelCursor: GameCursor
     fullWateringCanCursor: GameCursor
@@ -54,7 +55,8 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.soundRegistry = newSoundRegistry(result.assetLoader)
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
 
-  window.mouseCursor = result.clickerCursor.cursor
+  result.cursorSprite = result.clickerCursor.sprite
+
 
 proc load*(self: Stage1) =
   self.background = self.assetLoader.newSprite(
@@ -103,14 +105,14 @@ proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind)
   case kind:
   of Clicker:
     self.currentCursor = ClickerCursor
-    window.mouseCursor = self.clickerCursor.cursor
+    self.cursorSprite = self.clickerCursor.sprite
   of Shovel:
     self.currentCursor = ShovelCursor
-    window.mouseCursor = self.shovelCursor.cursor
+    self.cursorSprite = self.shovelCursor.sprite
   of WateringCan:
     # TODO emptying logic
     self.currentCursor = WateringCanCursor
-    window.mouseCursor = self.fullWateringCanCursor.cursor
+    self.cursorSprite = self.fullWateringCanCursor.sprite
 
   self.gameMenu.clickSound.play()
 
@@ -199,6 +201,9 @@ proc update*(self: Stage1) =
   self.Scene.update()
 
 proc draw*(self: Stage1, window: RenderWindow) =
+  self.cursorSprite.position = window.mapPixelToCoords(Vector2i(mouse_getPosition(window)), self.view)
+
   window.draw(self.background)
   self.gameMenu.draw(window)
   self.Scene.draw(window)
+  window.draw(self.cursorSprite)

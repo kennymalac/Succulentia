@@ -11,6 +11,7 @@ type
   GameCursor* = ref GameCursorObj
   GameCursorObj = object
     cursor*: Cursor
+    sprite*: Sprite
     case kind*: GameCursorKind
     of ClickerCursor: discard
     of ShovelCursor: discard
@@ -33,3 +34,5 @@ proc newGameCursor*(assetLoader: AssetLoader, kind: GameCursorKind, variant: str
   echo location
   let image = assetLoader.newImage(location);
   result.cursor = newCursor(image.pixelsPtr, image.size, vec2(cint(image.size.x/2), cint(image.size.y/2)))
+  result.sprite = assetLoader.newSprite(assetLoader.newImageAsset(location))
+  result.sprite.origin = vec2(result.sprite.texture.size.x/2, result.sprite.texture.size.y/2)

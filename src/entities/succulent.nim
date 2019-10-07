@@ -33,7 +33,7 @@ proc randomSuccSprite*(assetLoader: AssetLoader): Sprite =
   randomize()
   # TODO growth should give right set of 5
   return assetLoader.newSprite(
-    assetLoader.newImageAsset(fmt"{succVariants[rand(succVariants.len)]}.png")
+    assetLoader.newImageAsset(fmt"{sample(succVariants)}.png")
   )
 
 proc print*(self: Succulent) =

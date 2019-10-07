@@ -19,6 +19,7 @@ proc main(windowConfig: WindowConfig) =
   currentScene.load()
   window.view = currentScene.view
 
+  window.mouseCursorVisible = false
   while window.open:
     currentScene.pollEvent(window)
 
