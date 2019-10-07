@@ -1,6 +1,8 @@
+import strformat
 import times
 import sequtils
 import options
+import os
 
 import csfml, csfml/audio
 
@@ -18,6 +20,9 @@ import stage
 
 type
   Stage1* = ref object of Scene
+    font: Font
+    score: int
+    scoreText: Text
     gameMusic: Sound
     background: Sprite
     boundary: Boundary
@@ -58,6 +63,12 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
   result.gameMusic = result.soundRegistry.getSound(StageGameMusic)
   result.waterTimer = initDuration(seconds = 0)
+
+  result.score = 0
+  result.font = newFont(joinPath("assets", "fonts", "PressStart2P.ttf"))
+  result.scoreText = newText("Score: ", result.font)
+  result.scoreText.font = result.font
+  result.scoreText.characterSize = 14
 
   result.currentCursor = result.clickerCursor
 
@@ -146,6 +157,11 @@ proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
   let enemy = maybeEnemy.get()
   enemy.health -= 10
   if enemy.health <= 0:
+    if enemy of Ant:
+      self.score += 1
+    elif enemy of Mealy:
+      self.score += 5
+
     enemy.isDead = true
     enemy.deathSound.play()
 
@@ -229,6 +245,14 @@ proc draw*(self: Stage1, window: RenderWindow) =
 
   window.draw(self.background)
   self.gameMenu.draw(window)
+
   self.Scene.draw(window)
+
+  self.scoreText = newText(fmt"Score: {self.score}", self.font)
+  self.scoreText.characterSize = 18
+  self.scoreText.position = vec2(window.size.x/2 - cfloat(self.scoreText.globalBounds.width/2), 20)
+
+  window.draw(self.scoreText)
+
   window.draw(self.currentCursor.sprite)
   # window.draw(mouseRect)
