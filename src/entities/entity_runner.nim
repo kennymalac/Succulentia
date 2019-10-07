@@ -1,8 +1,9 @@
 import times
-import entity, enemy, succulent
+import entity, enemy, succulent, pot
 import csfml
 import vector_utils
-
+import options
+import ../soundRegistry
 import ../assetLoader
 
 var window = new_RenderWindow(video_mode(800, 600), "Succulentia")
@@ -13,49 +14,52 @@ var
   spider: Enemy
   bee: Enemy
   suc: Succulent
+  potInstance: Pot
 
 spider = Spider()
 bee = Bee()
 
 let loader = newAssetLoader("../../assets")
+let registry = newSoundRegistry(loader)
 
-let sucSprite = loader.newSprite(loader.newImageAsset("basic-succ.png"))
-sucSprite.position = vec2(10, 10)
+let sucSprite = loader.newSprite(loader.newImageAsset("succ-andro-5.png"))
 
 let antSprite = loader.newSprite(loader.newImageAsset("ant-sprite.png"))
 antSprite.position = vec2(300, 300)
 
-suc = newSucculent(sucSprite)
-var sucRect = newRectangleShape(vec2(suc.rect.width, suc.rect.height))
-sucRect.position = vec2(suc.rect.left, suc.rect.top)
+var potSprite = loader.newSprite(loader.newImageAsset("pot-sprite.png"))
+var potDirtSprite = loader.newSprite(loader.newImageAsset("pot-sprite-dirt.png"))
 
+potSprite.position = vec2(80, 80)
+potDirtSprite.position = vec2(80, 80)
+
+potInstance = newPot(potSprite, potDirtSprite)
+
+suc = newSucculent(sucSprite, registry)
 
 var sucs: seq[Entity]
 sucs = @[ (Entity) suc ]
 
-ant = newAnt(ant_sprite)
+ant = newAnt(ant_sprite, registry)
 var i: int = 0
+var drawSuc: bool = false
 
 while window.open:
   window.clear(color(112, 197, 206))
   i += 1
+  if i == 200:
+    potInstance.placeDirt()
+
   if i == 500:
-    sucSprite.position = vec2(400, 260)
-    suc = newSucculent(sucSprite)
-    sucRect = newRectangleShape(vec2(suc.rect.width, suc.rect.height))
-    sucRect.position = vec2(suc.rect.left, suc.rect.top)
-    ant.isAttacking = false
+    suc.setPot(some(potInstance))
+    drawSuc = true
 
   let dt = getTime()
 
-  var antRect = newRectangleShape(vec2(ant.rect.width, ant.rect.height))
-  antRect.position = vec2(ant.rect.left, ant.rect.top)
+  window.draw(potInstance.sprite)
+  if drawSuc:
+    window.draw(suc.sprite)
 
-  window.draw(suc.sprite)
-  window.draw(ant.sprite)
-  window.draw(sucRect)
-  window.draw(antRect)
-  ant.update(dt - dt, sucs)
   window.display()
 
 ant.print()

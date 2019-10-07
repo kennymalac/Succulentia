@@ -1,7 +1,8 @@
 import strformat
 import random
+import options
 
-import entity
+import entity, pot
 import csfml, csfml/audio
 
 import ../soundRegistry
@@ -12,6 +13,7 @@ type
     health*: int
     hydration*: int
     deathSound*: Sound
+    pot*: Option[Pot]
 
 let succVariants = @[
   "succ-aloe-5",
@@ -26,7 +28,7 @@ let succVariants = @[
 ]
 
 proc newSucculent*(sprite: Sprite, soundRegistry: SoundRegistry): Succulent =
-  result = Succulent(health: 100, deathSound: soundRegistry.getSound(SucculentDeathSound))
+  result = Succulent(health: 100, deathSound: soundRegistry.getSound(SucculentDeathSound), pot: none(Pot))
   initEntity(result, sprite)
 
 proc randomSuccSprite*(assetLoader: AssetLoader): Sprite =
@@ -35,6 +37,13 @@ proc randomSuccSprite*(assetLoader: AssetLoader): Sprite =
   return assetLoader.newSprite(
     assetLoader.newImageAsset(fmt"{sample(succVariants)}.png")
   )
+
+proc setPot*(self: Succulent, pot: Option[Pot]) =
+  self.pot = pot
+  self.sprite.position = vec2(get(self.pot).sprite.position.x, float(get(self.pot).sprite.scaledSize.y) + 4)
+
+proc setSucPosition(self: Succulent) =
+  self.sprite.position = get(self.pot).sprite.position
 
 proc print*(self: Succulent) =
   echo "I am a succulent\n"

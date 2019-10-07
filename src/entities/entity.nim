@@ -11,6 +11,7 @@ type
     interRect*: FloatRect
 
 proc initEntity*(self: Entity, sprite: Sprite) =
+  echo sprite.scaledSize.x
   self.sprite = sprite
   self.sprite.origin = vec2(cfloat(sprite.scaledSize.x / 2), cfloat(sprite.scaledSize.y) / 2)
   self.rect = rect(sprite.position.x - 5, sprite.position.y - 5, cfloat(sprite.scaledSize.x) / 2, cfloat(sprite.scaledSize.y) / 2)
