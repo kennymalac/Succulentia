@@ -87,7 +87,16 @@ proc load*(self: Stage1) =
   let ant = newAnt(ant_sprite, self.soundRegistry)
   self.entities.add(Entity(ant))
 
-  let nearestSuc: Succulent = ant.getTargetSuc(self.entities)
+  let mealySprite = self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("mealy-sprite.png"),
+  )
+  mealySprite.position = vec2(500, 400)
+
+  let mealy = newMealy(mealy_sprite, self.soundRegistry)
+  self.entities.add(Entity(mealy))
+
+  discard ant.getTargetSuc(self.entities)
+  discard mealy.getTargetSuc(self.entities)
   # let ant1, ant2, ant3 = delayedCreate(Ant() ...
   #
 

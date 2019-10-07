@@ -25,6 +25,8 @@ type
 
   Ant* = ref object of Enemy
 
+  Mealy* = ref object of Enemy
+
   Spider* = ref object of Enemy
     hasAttacked: bool
 
@@ -34,7 +36,11 @@ proc initEnemy*(enemy: Enemy, sprite: Sprite) =
   initEntity(enemy, sprite)
 
 proc newAnt*(sprite: Sprite, soundRegistry: SoundRegistry): Ant =
-  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1))
+  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 0.6, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1))
+  initEnemy(result, sprite)
+
+proc newMealy*(sprite: Sprite, soundRegistry: SoundRegistry): Mealy =
+  result = Mealy(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 1.75, health: 20, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound2), attackSpeed: initDuration(seconds = 1))
   initEnemy(result, sprite)
 
 # Returns whether or not Succulent reached 0 health
@@ -146,6 +152,9 @@ proc update*(self: Enemy, dt: times.Duration, entities: seq[Entity]) =
 
 proc print*(self: Ant) =
   echo "I am an Ant\n"
+
+proc print*(self: Mealy) =
+  echo "I am a Mealy\n"
 
 proc print*(self: Spider) =
   echo "I am a Spider\n"
