@@ -23,17 +23,33 @@ let antSprite = new_Sprite(ant_texture)
 antSprite.position = vec2(300, 300)
 
 suc = newSucculent(sucSprite)
+var sucRect = newRectangleShape(vec2(suc.rect.width, suc.rect.height))
+sucRect.position = vec2(suc.rect.left, suc.rect.top)
+
 
 var sucs: seq[Entity]
 sucs = @[ (Entity) suc ]
 
-ant = Ant(sprite: ant_sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 15)
-let nearestSuc: Succulent = ant.getTargetSuc(sucs)
+ant = newAnt(ant_sprite)
+var i: int = 0
 
 while window.open:
   window.clear(color(112, 197, 206))
+  i += 1
+  if i == 500:
+    sucSprite.position = vec2(400, 260)
+    suc = newSucculent(sucSprite)
+    sucRect = newRectangleShape(vec2(suc.rect.width, suc.rect.height))
+    sucRect.position = vec2(suc.rect.left, suc.rect.top)
+    ant.isAttacking = false
+
+  var antRect = newRectangleShape(vec2(ant.rect.width, ant.rect.height))
+  antRect.position = vec2(ant.rect.left, ant.rect.top)
+
   window.draw(suc.sprite)
   window.draw(ant.sprite)
+  window.draw(sucRect)
+  window.draw(antRect)
   ant.update(sucs)
   window.display()
 

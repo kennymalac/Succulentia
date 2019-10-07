@@ -24,6 +24,13 @@ type
 type
   Bee* = ref object of Enemy
 
+proc initEnemy*(enemy: Enemy, sprite: Sprite) =
+  initEntity(enemy, sprite)
+
+proc newAnt*(sprite: Sprite): Ant =
+  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 15, isAttacking: false)
+  initEnemy(result, sprite)
+
 proc attack*(self: Enemy) =
   # attack logic
   # attack animation
@@ -40,6 +47,7 @@ proc move(self: Enemy) =
   moveVector.y *= self.speed
   self.rotate()
   self.sprite.move(moveVector)
+  self.updateRectPosition()
   if self.rect.intersects(self.targetSuc.rect, self.interRect):
     self.isAttacking = true
 
@@ -83,7 +91,7 @@ proc getTargetSuc*(self: Enemy, entities: seq[Entity]): Succulent =
   return self.targetSuc
 
 proc update*(self: Enemy, entities: seq[Entity]) =
-  self.rect = rect(self.sprite.position.x, self.sprite.position.y, cfloat(self.sprite.texture.size.x), cfloat(self.sprite.texture.size.y))
+  self.updateRectPosition()
   if not self.isAttacking:
     var suc: Succulent = self.getTargetSuc(entities)
     self.targetSuc = suc
