@@ -14,6 +14,7 @@ import ../menus/gameMenu
 import ../entities/entity
 import ../entities/enemy
 import ../entities/succulent
+import ../entities/pot
 
 
 import stage
@@ -86,16 +87,38 @@ proc load*(self: Stage1) =
 
   self.gameMenu = newGameMenu(self.assetLoader, self.soundRegistry, self.size)
 
+  let pot = newPot(self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("pot-sprite.png")
+  ), self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("pot-sprite-dirt.png")
+  ))
+
+  let pot2 = newPot(self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("pot-sprite.png")
+  ), self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("pot-sprite-dirt.png")
+  ))
+
+  pot.setPosition(vec2(200, 200))
+  pot2.setPosition(vec2(400, 400))
+  pot.placeDirt()
+  pot2.placeDirt()
+
+  self.entities.add(Entity(pot))
+  self.entities.add(Entity(pot2))
+
   let sucSprite = randomSuccSprite(self.assetLoader)
-  sucSprite.position = vec2(338, 240)
   let suc = newSucculent(suc_sprite, self.soundRegistry)
+  suc.setPot(some(pot))
   self.entities.add(Entity(suc))
 
   let sucSprite2 = randomSuccSprite(self.assetLoader)
-  sucSprite2.position = vec2(538, 180)
   let suc2 = newSucculent(sucSprite2, self.soundRegistry)
+  suc2.setPot(some(pot2))
   self.entities.add(Entity(suc2))
 
+  echo suc2.sprite.position
+  echo pot2.sprite.position
 
   let antSprite = self.assetLoader.newSprite(
     self.assetLoader.newImageAsset("ant-sprite.png"),
