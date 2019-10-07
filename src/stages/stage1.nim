@@ -70,7 +70,7 @@ proc load*(self: Stage1) =
   self.entities.add(Entity(suc))
 
   let sucSprite2 = self.assetLoader.newSprite(
-    self.assetLoader.newImageAsset("basic-succ.png"),
+    self.assetLoader.newImageAsset("succ-aloe-5.png"),
   )
   sucSprite2.position = vec2(538, 180)
   let suc2 = newSucculent(sucSprite2)

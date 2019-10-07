@@ -8,7 +8,6 @@ type
     texture*: Texture
     size*: Vector2i
 
-type
   SoundAssetKind* = enum
     ClickSound,
     BugChompSound,
@@ -23,6 +22,8 @@ type
     of BugChompSound: discard
     of GameMusicSound: discard
     of RunningWaterSound: discard
+
+    # type RoundRobinAsset =
 
 # even though these are static for right now, some sound assets will have round robin behavior
 let ClickSoundLocation*: string = "click.wav"
