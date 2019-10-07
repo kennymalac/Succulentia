@@ -49,13 +49,15 @@ proc main(windowConfig: WindowConfig) =
 
     # TODO refactor
     if currentScene of MainMenuScene:
-      MainMenuScene(currentScene).pollEvent(window)
-      MainMenuScene(currentScene).update(window)
-      MainMenuScene(currentScene).draw(window)
+      let menuScene = MainMenuScene(currentScene)
+      menuScene.pollEvent(window)
+      menuScene.update(window)
+      menuScene.draw(window)
     elif currentScene of Stage1:
-      Stage1(currentScene).pollEvent(window)
-      Stage1(currentScene).update(window)
-      Stage1(currentScene).draw(window)
+      let stageScene = Stage1(currentScene)
+      stageScene.pollEvent(window)
+      stageScene.update(window)
+      stageScene.draw(window)
 
     window.display()
 
