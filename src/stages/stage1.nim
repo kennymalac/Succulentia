@@ -30,6 +30,7 @@ type
     soundRegistry: SoundRegistry
     wateringSound: Sound
     bugClickSound: Sound
+    isGameOver: bool
     gameMenu: GameMenu
     isMouseDown: bool
     waterTimer: Duration
@@ -51,7 +52,7 @@ proc initCursors*(self: Stage1) =
 
 proc newStage1*(window: RenderWindow): Stage1 =
   let boundary: Boundary = (cint(100), cint(100), cint(100), cint(100))
-  result = Stage1(boundary: boundary)
+  result = Stage1(boundary: boundary, isGameOver: false)
 
   initScene(
     result,
@@ -266,6 +267,12 @@ proc update*(self: Stage1, window: RenderWindow) =
   self.currentCursor.sprite.position = mouseCoords
   self.currentCursor.updateRectPosition()
 
+  if not self.isGameOver:
+    self.isGameOver = not self.entities.anyIt(it of Succulent)
+
+  if self.isGameover:
+    return
+
   # Delete last round of dead succs if any
   self.entities.keepItIf(not it.isDead)
 
@@ -295,4 +302,12 @@ proc draw*(self: Stage1, window: RenderWindow) =
   window.draw(self.scoreText)
 
   window.draw(self.currentCursor.sprite)
+
+  if self.isGameOver:
+    let gameOverText = newText("GAME OVER", self.font)
+    gameOverText.characterSize = 72
+    gameOverText.position = vec2(window.size.x/2 - cfloat(gameOverText.globalBounds.width/2), window.size.y/2 - cfloat(gameOverText.globalBounds.height/2))
+    window.draw(gameOverText)
+
+
   # window.draw(mouseRect)
