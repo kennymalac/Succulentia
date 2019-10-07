@@ -34,7 +34,7 @@ proc initEnemy*(enemy: Enemy, sprite: Sprite) =
   initEntity(enemy, sprite)
 
 proc newAnt*(sprite: Sprite, soundRegistry: SoundRegistry): Ant =
-  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 15, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1))
+  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 2, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1))
   initEnemy(result, sprite)
 
 # Returns whether or not Succulent reached 0 health
@@ -113,6 +113,9 @@ proc getTargetSuc*(self: Enemy, entities: seq[Entity]): Succulent =
 
 proc update*(self: Enemy, dt: times.Duration, entities: seq[Entity]) =
   self.updateRectPosition()
+
+  if self.isDead:
+    return
 
   if not self.isAttacking:
     let hasSucculent = entities.anyIt(it of Succulent)

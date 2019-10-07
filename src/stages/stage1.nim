@@ -101,6 +101,46 @@ proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind)
 
   self.gameMenu.clickSound.play()
 
+proc checkGameMenuClickEvent(self: Stage1, window: RenderWindow, coords: Vector2f) : bool  =
+  let (doesContain, maybeKind) = self.gameMenu.contains(coords)
+  if doesContain:
+    assert maybeKind.isSome
+    echo maybeKind.get(), " menu item clicked"
+
+  if doesContain: self.handleMenuEvent(window, maybeKind.get())
+
+  return doesContain
+
+
+proc handlePlayerAttackEvent(self: Stage1, enemy: Enemy) =
+  discard
+
+proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
+  var maybeEnemy = none(Enemy)
+
+  for entity in self.entities:
+    if entity of Enemy:
+      # TODO make Cursor have a rect because the point is too small
+      if entity.rect.contains(coords): maybeEnemy = some(Enemy(entity))
+
+  if not maybeEnemy.isSome: return false
+
+  let enemy = maybeEnemy.get()
+  enemy.health -= 10
+  if enemy.health <= 0:
+    enemy.isDead = true
+
+  echo "Player attacked: DIE DIE DIE DIE\n"
+
+  return true
+
+proc handleLeftMouseEvent(self: Stage1, window: RenderWindow, event: Event) =
+  let coords = window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view)
+
+  # First action to dispatch wins
+  if self.checkGameMenuClickEvent(window, coords): return
+  if self.checkPlayerAttackEvent(coords): return
+
 proc pollEvent*(self: Stage1, window: RenderWindow) =
   var event: Event
   while window.poll_event(event):
@@ -117,11 +157,7 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
       of MouseButton.Left:
         echo "Mouse button event coords: "
         echo window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view)
-        let (doesContain, maybeKind) = self.gameMenu.contains(window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view))
-        if doesContain:
-          assert maybeKind.isSome
-          echo maybeKind.get(), " menu item clicked"
-          self.handleMenuEvent(window, maybeKind.get())
+        self.handleLeftMouseEvent(window, event)
       else: discard
     else: discard
 
