@@ -136,6 +136,14 @@ proc load*(self: Stage1) =
   let mealy = newMealy(mealy_sprite, self.soundRegistry)
   self.entities.add(Entity(mealy))
 
+  let beetleSprite = self.assetLoader.newSprite(
+    self.assetLoader.newImageAsset("beetle-sprite.png"),
+  )
+  beetleSprite.position = vec2(500, 400)
+
+  let beetle = newBeetle(beetle_sprite, self.soundRegistry)
+  self.entities.add(Entity(beetle))
+
   discard ant.getTargetSuc(self.entities)
   discard mealy.getTargetSuc(self.entities)
   # let ant1, ant2, ant3 = delayedCreate(Ant() ...

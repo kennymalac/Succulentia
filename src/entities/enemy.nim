@@ -23,6 +23,7 @@ type
     attackSpeed*: Duration
     attackSound*: Sound
     deathSound*: Sound
+    spawnSound*: Option[Sound]
 
   Ant* = ref object of Enemy
 
@@ -31,25 +32,33 @@ type
   Spider* = ref object of Enemy
     hasAttacked: bool
 
+  Beetle* = ref object of Enemy
+
   Bee* = ref object of Enemy
 
 proc initEnemy*(enemy: Enemy, sprite: Sprite) =
   initEntity(enemy, sprite)
+  if enemy.spawnSound.isSome:
+    enemy.spawnSound.get().play()
 
 proc newAnt*(sprite: Sprite, soundRegistry: SoundRegistry): Ant =
-  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 5, speed: 0.6, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound))
+  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 5, speed: 0.6, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
   initEnemy(result, sprite)
 
 proc newMealy*(sprite: Sprite, soundRegistry: SoundRegistry): Mealy =
-  result = Mealy(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 1.75, health: 20, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound2), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound))
+  result = Mealy(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 1.75, health: 30, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound2), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
   initEnemy(result, sprite)
 
-proc newBee*(sprite: Sprite, soundRegistry: SoundRegistry): Mealy =
-  result = Bee(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 5, speed: 2.5, health: 20, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound3), attackSpeed: initDuration(seconds = 0.5), deathSound: soundRegistry.getSound(BugDeathSound))
+proc newBee*(sprite: Sprite, soundRegistry: SoundRegistry): Bee =
+  result = Bee(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 5, speed: 2.5, health: 30, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound3), attackSpeed: initDuration(milliseconds = 500), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
   initEnemy(result, sprite)
 
-proc newSpider*(sprite: Sprite, soundRegistry: SoundRegistry): Mealy =
-  result = Bee(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 15, speed: 1.25, health: 30, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound4), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound))
+proc newBeetle*(sprite: Sprite, soundRegistry: SoundRegistry): Beetle =
+  result = Beetle(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 15, speed: 2, health: 100, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound5), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: some(soundRegistry.getSound(BugSpawnSpookySound)))
+  initEnemy(result, sprite)
+
+proc newSpider*(sprite: Sprite, soundRegistry: SoundRegistry): Spider =
+  result = Spider(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 15, speed: 1.25, health: 50, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound4), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
   initEnemy(result, sprite)
 
 # Returns whether or not Succulent reached 0 health
@@ -88,11 +97,11 @@ proc move(self: Enemy) =
 proc updateDirection(self: Enemy, entity: Entity) =
   self.direction = vector_utils.normalize(entity.sprite.position - self.sprite.position)
 
-proc updateDirection(self: Spider) =
-  if self.hasAttacked:
-    self.direction = vec2(0, 1)
-  else:
-    self.direction = vec2(0, -1)
+# proc updateDirection(self: Spider) =
+#   if self.hasAttacked:
+#     self.direction = vec2(0, 1)
+#   else:
+#     self.direction = vec2(0, -1)
 
 # Retrieves succulent with minimum euclidian distance
 proc getNearestSuc(self: Enemy, entities: seq[Entity]): Option[Succulent] =
@@ -111,15 +120,16 @@ proc getNearestSuc(self: Enemy, entities: seq[Entity]): Option[Succulent] =
 
 # Retrieves random succulent from entity sequence
 proc getRandomSuc(self: Enemy, entities: seq[Entity]): Option[Succulent] =
-  var entity = entities[rand(entities.len)]
+  var entity = entities[rand(entities.len-1)]
   while (not (entity of Succulent)):
-    entity = entities[rand(entities.len)]
+    entity = entities[rand(entities.len-1)]
+
   return some(Succulent(entity))
 
 # Retrieves and stores target succulent to move towards and attack
 proc getTargetSuc*(self: Enemy, entities: seq[Entity]): Succulent =
   var suc: Succulent
-  if self of Spider or self of Bee:
+  if self of Spider or self of Bee or self of Beetle:
     suc = self.getRandomSuc(entities).get()
   else:
     suc = self.getNearestSuc(entities).get()
@@ -133,17 +143,18 @@ proc update*(self: Enemy, dt: times.Duration, entities: seq[Entity]) =
     return
 
   if not self.isAttacking:
-    let hasSucculent = entities.anyIt(it of Succulent)
-    if not hasSucculent:
-      return
+    if self.maybeTargetSuc.isNone:
+      let hasSucculent = entities.anyIt(it of Succulent)
+      if not hasSucculent:
+        return
 
-    self.maybeTargetSuc = some(self.getTargetSuc(entities))
+      self.maybeTargetSuc = some(self.getTargetSuc(entities))
     self.updateDirection(self.maybeTargetSuc.get())
     self.move()
 
   else:
     # Make sure succ is not already dead
-    if self.maybeTargetSuc.get().isDead:
+    if self.maybeTargetSuc.isSome and self.maybeTargetSuc.get().isDead:
       self.isAttacking = false
       self.maybeTargetSuc = none(Succulent)
       return
@@ -168,6 +179,9 @@ proc print*(self: Mealy) =
 
 proc print*(self: Spider) =
   echo "I am a Spider\n"
+
+proc print*(self: Beetle) =
+  echo "I am a Beetle\n"
 
 proc print*(self: Bee) =
   echo "I am a Bee\n"
