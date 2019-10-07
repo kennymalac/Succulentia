@@ -71,14 +71,14 @@ proc load*(self: Stage1) =
     self.assetLoader.newImageAsset("succ-andro-5.png"),
   )
   sucSprite.position = vec2(338, 240)
-  let suc = newSucculent(suc_sprite)
+  let suc = newSucculent(suc_sprite, self.soundRegistry)
   self.entities.add(Entity(suc))
 
   let sucSprite2 = self.assetLoader.newSprite(
     self.assetLoader.newImageAsset("succ-aloe-5.png"),
   )
   sucSprite2.position = vec2(538, 180)
-  let suc2 = newSucculent(sucSprite2)
+  let suc2 = newSucculent(sucSprite2, self.soundRegistry)
   self.entities.add(Entity(suc2))
 
 

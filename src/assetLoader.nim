@@ -12,6 +12,8 @@ type
     ClickSound,
     BugChompSound,
     BugChompSound2,
+    SucculentPlantSound,
+    SucculentDeathSound,
     BugDeathSound,
     GameMusicSound,
     RunningWaterSound
@@ -21,6 +23,8 @@ type
     buffer*: SoundBuffer
     case kind*: SoundAssetKind
     of ClickSound: discard
+    of SucculentPlantSound: discard
+    of SucculentDeathSound: discard
     of BugChompSound: discard
     of BugChompSound2: discard
     of BugDeathSound: discard
@@ -31,6 +35,8 @@ type
 
 # even though these are static for right now, some sound assets will have round robin behavior
 let ClickSoundLocation*: string = "click.wav"
+let SucculentPlantSoundLocation*: string = "succ_plant1.wav"
+let SucculentDeathSoundLocation*: string = "succ_death.wav"
 let BugChompSoundLocation*: string = "bug_chomp1.wav"
 let BugChompSound2Location*: string = "bug_chomp2.wav"
 let BugDeathSoundLocation*: string = "bug_die1.wav"
@@ -72,6 +78,8 @@ proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
 
   case kind:
     of ClickSound: location = ClickSoundLocation
+    of SucculentPlantSound: location = SucculentPlantSoundLocation
+    of SucculentDeathSound: location = SucculentDeathSoundLocation
     of BugChompSound: location = BugChompSoundLocation
     of BugChompSound2: location = BugChompSound2Location
     of BugDeathSound: location = BugDeathSoundLocation

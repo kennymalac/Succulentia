@@ -150,6 +150,7 @@ proc update*(self: Enemy, dt: times.Duration, entities: seq[Entity]) =
       if isSuccDead:
         self.isAttacking = false
         targetSuc.isDead = true # RIP
+        targetSuc.deathSound.play()
 
 proc print*(self: Ant) =
   echo "I am an Ant\n"
