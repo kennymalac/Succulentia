@@ -20,7 +20,7 @@ type
     of WateringCanCursor: discard
 
 proc newGameCursor*(assetLoader: AssetLoader, kind: GameCursorKind, variant: string = ""): GameCursor =
-  new result
+  result = GameCursor(kind: kind)
 
   var location = ""
 
