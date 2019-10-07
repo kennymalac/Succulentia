@@ -30,6 +30,8 @@ type
     soundRegistry: SoundRegistry
     wateringSound: Sound
     bugClickSound: Sound
+    potsNeedSuc: seq[tuple[pot: Pot, duration: Duration, notAdded: bool]]
+    plantSound: Sound
     isGameOver: bool
     gameMenu: GameMenu
     isMouseDown: bool
@@ -64,6 +66,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.initCursors()
   result.soundRegistry = newSoundRegistry(result.assetLoader)
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
+  result.plantSound  = result.soundRegistry.getSound(SucculentPlantSound)
   result.bugClickSound = result.soundRegistry.getSound(BugClickSound)
   result.gameMusic = result.soundRegistry.getSound(StageGameMusic)
   result.waterTimer = initDuration(seconds = 0)
@@ -104,8 +107,8 @@ proc load*(self: Stage1) =
 
   pot.setPosition(vec2(200, 200))
   pot2.setPosition(vec2(400, 400))
-  pot.placeDirt()
-  pot2.placeDirt()
+  #pot.placeDirt()
+  #pot2.placeDirt()
 
   self.entities.add(Entity(pot))
   self.entities.add(Entity(pot2))
@@ -216,6 +219,23 @@ proc checkPlayerWateringEvent(self: Stage1, coords: Vector2f) : bool =
     # Hydrade plont if intersecting
   return true
 
+proc checkPlayerPlantEvent(self: Stage1, coords: Vector2f) : bool =
+  var maybePot = none(Pot)
+
+  for entity in self.entities:
+    if entity of Pot:
+      if entity.rect.intersects(self.currentCursor.rect, self.currentCursor.interRect): maybePot = some(Pot(entity))
+
+  if not maybePot.isSome: return false
+  let pot = maybePot.get()
+  if pot.hasDirt: return false
+
+  self.plantSound.play()
+
+  pot.placeDirt()
+  var theDuration = initDuration(seconds = 0)
+  self.potsNeedSuc.add((pot, theDuration, true))
+
 proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, event: Event) =
   let coords = window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view)
 
@@ -277,6 +297,19 @@ proc update*(self: Stage1, window: RenderWindow) =
   self.entities.keepItIf(not it.isDead)
 
   let dt = self.Scene.update(window)
+
+  self.potsNeedSuc.keepItIf(it[2])
+
+  for t in self.potsNeedSuc:
+    var (pot, timeSinceAdded, notAdded) = t
+    timeSinceAdded += dt
+    if timeSinceAdded >= initDuration(seconds = 3):
+      let sucSprite = randomSuccSprite(self.assetLoader)
+      let suc = newSucculent(suc_sprite, self.soundRegistry)
+      suc.setPot(some(pot))
+      self.entities.add(Entity(suc))
+
+      notAdded = false
 
   if self.isMouseDown and self.currentCursor.kind == WateringCanCursor and self.currentCursor.variant == "full":
     self.waterTimer += dt
