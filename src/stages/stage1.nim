@@ -18,6 +18,7 @@ import stage
 
 type
   Stage1* = ref object of Scene
+    gameMusic: Sound
     background: Sprite
     boundary: Boundary
     soundRegistry: SoundRegistry
@@ -55,12 +56,15 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.initCursors()
   result.soundRegistry = newSoundRegistry(result.assetLoader)
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
+  result.gameMusic = result.soundRegistry.getSound(StageGameMusic)
   result.waterTimer = initDuration(seconds = 0)
 
   result.currentCursor = result.clickerCursor
 
 
 proc load*(self: Stage1) =
+  self.gameMusic.loop = true
+  self.gameMusic.play()
   self.background = self.assetLoader.newSprite(
     self.assetLoader.newImageAsset("background_1-1.png")
   )

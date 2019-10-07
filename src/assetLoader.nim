@@ -9,6 +9,8 @@ type
     size*: Vector2i
 
   SoundAssetKind* = enum
+    MainMenuMusic,
+    StageGameMusic,
     ClickSound,
     BugChompSound,
     BugChompSound2,
@@ -22,6 +24,8 @@ type
   SoundAssetObj = object
     buffer*: SoundBuffer
     case kind*: SoundAssetKind
+    of MainMenuMusic: discard
+    of StageGameMusic: discard
     of ClickSound: discard
     of SucculentPlantSound: discard
     of SucculentDeathSound: discard
@@ -34,6 +38,8 @@ type
     # type RoundRobinAsset =
 
 # even though these are static for right now, some sound assets will have round robin behavior
+let MainMenuMusicLocation*: string = "mus_mainmenu.ogg"
+let StageGameMusicLocation*: string = "mus_game.ogg"
 let ClickSoundLocation*: string = "click.wav"
 let SucculentPlantSoundLocation*: string = "succ_plant1.wav"
 let SucculentDeathSoundLocation*: string = "succ_death.wav"
@@ -77,6 +83,8 @@ proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
   var location: string = ""
 
   case kind:
+    of MainMenuMusic: location = MainMenuMusicLocation
+    of StageGameMusic: location = StageGameMusicLocation
     of ClickSound: location = ClickSoundLocation
     of SucculentPlantSound: location = SucculentPlantSoundLocation
     of SucculentDeathSound: location = SucculentDeathSoundLocation
