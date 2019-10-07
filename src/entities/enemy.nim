@@ -22,6 +22,7 @@ type
     attackCounter*: Duration
     attackSpeed*: Duration
     attackSound*: Sound
+    deathSound*: Sound
 
   Ant* = ref object of Enemy
 
@@ -36,11 +37,11 @@ proc initEnemy*(enemy: Enemy, sprite: Sprite) =
   initEntity(enemy, sprite)
 
 proc newAnt*(sprite: Sprite, soundRegistry: SoundRegistry): Ant =
-  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 0.6, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1))
+  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 0.6, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound))
   initEnemy(result, sprite)
 
 proc newMealy*(sprite: Sprite, soundRegistry: SoundRegistry): Mealy =
-  result = Mealy(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 1.75, health: 20, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound2), attackSpeed: initDuration(seconds = 1))
+  result = Mealy(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 1.75, health: 20, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound2), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound))
   initEnemy(result, sprite)
 
 # Returns whether or not Succulent reached 0 health

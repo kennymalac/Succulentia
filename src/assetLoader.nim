@@ -12,6 +12,7 @@ type
     ClickSound,
     BugChompSound,
     BugChompSound2,
+    BugDeathSound,
     GameMusicSound,
     RunningWaterSound
 
@@ -22,6 +23,7 @@ type
     of ClickSound: discard
     of BugChompSound: discard
     of BugChompSound2: discard
+    of BugDeathSound: discard
     of GameMusicSound: discard
     of RunningWaterSound: discard
 
@@ -31,6 +33,7 @@ type
 let ClickSoundLocation*: string = "click.wav"
 let BugChompSoundLocation*: string = "bug_chomp1.wav"
 let BugChompSound2Location*: string = "bug_chomp2.wav"
+let BugDeathSoundLocation*: string = "bug_die1.wav"
 let GameMusicSoundLocation*: string = "mus_game.ogg"
 let RunningWaterSoundLocation*: string = "water1.ogg"
 
@@ -71,6 +74,7 @@ proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
     of ClickSound: location = ClickSoundLocation
     of BugChompSound: location = BugChompSoundLocation
     of BugChompSound2: location = BugChompSound2Location
+    of BugDeathSound: location = BugDeathSoundLocation
     of GameMusicSound: location = GameMusicSoundLocation
     of RunningWaterSound: location = RunningWaterSoundLocation
 

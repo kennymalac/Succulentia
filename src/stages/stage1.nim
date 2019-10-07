@@ -20,7 +20,9 @@ type
     background: Sprite
     boundary: Boundary
     soundRegistry: SoundRegistry
+    wateringSound: Sound
     gameMenu: GameMenu
+    isMouseDown: bool
     currentCursor: GameCursorKind
     clickerCursor: GameCursor
     shovelCursor: GameCursor
@@ -50,6 +52,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
 
   result.initCursors()
   result.soundRegistry = newSoundRegistry(result.assetLoader)
+  result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
 
   window.mouseCursor = result.clickerCursor.cursor
 
@@ -143,17 +146,27 @@ proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
   enemy.health -= 10
   if enemy.health <= 0:
     enemy.isDead = true
+    enemy.deathSound.play()
 
   echo "Player attacked: DIE DIE DIE DIE\n"
 
   return true
 
-proc handleLeftMouseEvent(self: Stage1, window: RenderWindow, event: Event) =
+proc checkPlayerWateringEvent(self: Stage1, coords: Vector2f) : bool =
+  self.wateringSound.play()
+  return true
+
+proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, event: Event) =
   let coords = window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view)
 
-  # First action to dispatch wins
-  if self.checkGameMenuClickEvent(window, coords): return
-  if self.currentCursor == ClickerCursor and self.checkPlayerAttackEvent(coords): return
+  if pressed:
+    # First action to dispatch wins
+    if self.checkGameMenuClickEvent(window, coords): return
+    if self.currentCursor == ClickerCursor and self.checkPlayerAttackEvent(coords): return
+    if self.currentCursor == WateringCanCursor and self.checkPlayerWateringEvent(coords): return
+  # Mouse was released
+  else:
+    self.wateringSound.stop()
 
 proc pollEvent*(self: Stage1, window: RenderWindow) =
   var event: Event
@@ -169,9 +182,16 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
     of EventType.MouseButtonPressed:
       case event.mouseButton.button:
       of MouseButton.Left:
+        self.isMouseDown = true
         echo "Mouse button event coords: "
         echo window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view)
-        self.handleLeftMouseEvent(window, event)
+        self.handleLeftMouseEvent(true, window, event)
+      else: discard
+    of EventType.MouseButtonReleased:
+      case event.mouseButton.button:
+      of MouseButton.Left:
+        self.isMouseDown = false
+        self.handleLeftMouseEvent(false, window, event)
       else: discard
     else: discard
 
