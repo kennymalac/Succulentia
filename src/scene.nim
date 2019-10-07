@@ -35,7 +35,10 @@ proc load*(self: Scene) =
   # Scenes overload this to initialize all initial entities
   discard
 
-proc update*(self: Scene) =
+proc pollEvent*(self: Scene, window: RenderWindow) =
+  discard
+
+proc update*(self: Scene, window: RenderWindow) =
   self.previousTime = self.currentTime
   self.currentTime = getTime()
   var dt = self.currentTime - self.previousTime

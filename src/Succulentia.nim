@@ -1,7 +1,12 @@
+import strformat
+import options
+
 import csfml, csfml/ext
 import tables
 
+import scene
 import stages/stage1
+import stages/mainMenuScene
 
 type WindowConfig = tuple[title: string, width: cint, height: cint, fps: cint]
 
@@ -15,18 +20,43 @@ proc setupWindow(windowConfig: WindowConfig): RenderWindow =
 proc main(windowConfig: WindowConfig) =
   let window = setupWindow(windowConfig)
 
-  var currentScene = newStage1(window)
-  currentScene.load()
+  var currentScene: Scene = nil
+  var newScene: Option[Scene] = none(Scene)
+
+  var doNewScene = proc (scene: Scene) {.closure.} =
+    echo "newScene\n"
+    newScene = some(scene)
+
+  currentScene = Scene(newMainMenuScene(window, doNewScene))
+
+  window.title = fmt"Succulentia - {currentScene.title}"
+  MainMenuScene(currentScene).load(window)
   window.view = currentScene.view
 
   window.mouseCursorVisible = false
   while window.open:
-    currentScene.pollEvent(window)
+    if newScene.isSome:
+      window.title = fmt"Succulentia - {currentScene.title}"
+      currentScene = newScene.get()
+      if currentScene of Stage1:
+        Stage1(currentScene).load()
+
+      window.view = currentScene.view
+      newScene = none(Scene)
 
     # currentScene.draw();
     window.clear color(112, 197, 206)
-    currentScene.update()
-    currentScene.draw(window)
+
+    # TODO refactor
+    if currentScene of MainMenuScene:
+      MainMenuScene(currentScene).pollEvent(window)
+      MainMenuScene(currentScene).update(window)
+      MainMenuScene(currentScene).draw(window)
+    elif currentScene of Stage1:
+      Stage1(currentScene).pollEvent(window)
+      Stage1(currentScene).update(window)
+      Stage1(currentScene).draw(window)
+
     window.display()
 
 

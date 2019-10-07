@@ -23,6 +23,7 @@ type
     wateringSound: Sound
     gameMenu: GameMenu
     isMouseDown: bool
+    water: int
     currentCursor: GameCursor
     clickerCursor: GameCursor
     shovelCursor: GameCursor
@@ -35,7 +36,7 @@ proc initCursors*(self: Stage1) =
   self.currentCursor = self.clickerCursor
   self.clickerCursor = newCursor(ClickerCursor)
   self.shovelCursor = newCursor(ShovelCursor)
-  self.fullWateringCanCursor = newCursor(WateringCanCursor)
+  self.fullWateringCanCursor = newCursor(WateringCanCursor, "full")
   self.emptyWateringCanCursor = newCursor(WateringCanCursor, "empty")
 
 
@@ -53,6 +54,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.initCursors()
   result.soundRegistry = newSoundRegistry(result.assetLoader)
   result.wateringSound = result.soundRegistry.getSound(RunningWaterSound)
+  result.water = 100
 
   result.currentCursor = result.clickerCursor
 
@@ -147,7 +149,9 @@ proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
   return true
 
 proc checkPlayerWateringEvent(self: Stage1, coords: Vector2f) : bool =
-  self.wateringSound.play()
+  if self.currentCursor.variant == "full":
+    self.wateringSound.play()
+    # Hydrade plont if intersecting
   return true
 
 proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, event: Event) =
@@ -160,6 +164,8 @@ proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, eve
     if self.currentCursor.kind == WateringCanCursor and self.checkPlayerWateringEvent(coords): return
   # Mouse was released
   else:
+    if self.currentCursor.variant == "full" and self.wateringSound.status == Playing:
+      self.currentCursor = self.emptyWateringCanCursor
     self.wateringSound.stop()
 
 proc pollEvent*(self: Stage1, window: RenderWindow) =
@@ -190,17 +196,17 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
     else: discard
 
 
-proc update*(self: Stage1) =
-  # Delete last round of dead succs if any
-  self.entities.keepItIf(not it.isDead)
-
-  self.Scene.update()
-
-proc draw*(self: Stage1, window: RenderWindow) =
+proc update*(self: Stage1, window: RenderWindow) =
   let mouseCoords = window.mapPixelToCoords(mouse_getPosition(window), self.view)
   self.currentCursor.sprite.position = mouseCoords
   self.currentCursor.updateRectPosition()
 
+  # Delete last round of dead succs if any
+  self.entities.keepItIf(not it.isDead)
+
+  self.Scene.update(window)
+
+proc draw*(self: Stage1, window: RenderWindow) =
   # var mouseRect = newRectangleShape(vec2(self.currentCursor.rect.width, self.currentCursor.rect.height))
   # mouseRect.position = vec2(self.currentCursor.rect.left, self.currentCursor.rect.top)
 

@@ -10,6 +10,7 @@ type
 
   GameCursor* = ref GameCursorObj
   GameCursorObj = object
+    variant*: string
     cursor*: Cursor
     sprite*: Sprite
     rect*: FloatRect
@@ -20,7 +21,7 @@ type
     of WateringCanCursor: discard
 
 proc newGameCursor*(assetLoader: AssetLoader, kind: GameCursorKind, variant: string = ""): GameCursor =
-  result = GameCursor(kind: kind)
+  result = GameCursor(kind: kind, variant: variant)
 
   var location = ""
 
