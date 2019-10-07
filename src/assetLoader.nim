@@ -14,6 +14,10 @@ type
     ClickSound,
     BugChompSound,
     BugChompSound2,
+    BugChompSound3,
+    BugChompSound4,
+    BugChompSound5,
+    BugChompSound6,
     SucculentPlantSound,
     SucculentDeathSound,
     BugDeathSound,
@@ -45,6 +49,10 @@ let SucculentPlantSoundLocation*: string = "succ_plant1.wav"
 let SucculentDeathSoundLocation*: string = "succ_death.wav"
 let BugChompSoundLocation*: string = "bug_chomp1.wav"
 let BugChompSound2Location*: string = "bug_chomp2.wav"
+let BugChompSound3Location*: string = "bug_chomp3.wav"
+let BugChompSound4Location*: string = "bug_chomp4.wav"
+let BugChompSound5Location*: string = "bug_chomp5.wav"
+let BugChompSound6Location*: string = "bug_chomp6.wav"
 let BugDeathSoundLocation*: string = "bug_die1.wav"
 let GameMusicSoundLocation*: string = "mus_game.ogg"
 let RunningWaterSoundLocation*: string = "water1.ogg"
@@ -90,6 +98,10 @@ proc newSoundAsset*(self: AssetLoader, kind: SoundAssetKind): SoundAsset =
     of SucculentDeathSound: location = SucculentDeathSoundLocation
     of BugChompSound: location = BugChompSoundLocation
     of BugChompSound2: location = BugChompSound2Location
+    of BugChompSound3: location = BugChompSound3Location
+    of BugChompSound4: location = BugChompSound4Location
+    of BugChompSound5: location = BugChompSound5Location
+    of BugChompSound6: location = BugChompSound6Location
     of BugDeathSound: location = BugDeathSoundLocation
     of GameMusicSound: location = GameMusicSoundLocation
     of RunningWaterSound: location = RunningWaterSoundLocation
