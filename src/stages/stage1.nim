@@ -31,18 +31,22 @@ type
     soundRegistry: SoundRegistry
     wateringSound: Sound
     bugClickSound: Sound
-    potsNeedSuc: seq[tuple[pot: Pot, duration: Duration, notAdded: bool]]
+    potsNeedSuc: seq[tuple[pot: Pot, duration: times.Time]]
     plantSound: Sound
     isGameOver: bool
     gameMenu: GameMenu
     isMouseDown: bool
     waterTimer: Duration
+    onlySpawnAntAndMealy: bool
+    onlyAntAndMealyTimer: Duration
+    chanceTimer: Duration
+    potSpawnTimer: Duration
     currentCursor: GameCursor
     clickerCursor: GameCursor
     shovelCursor: GameCursor
     fullWateringCanCursor: GameCursor
     emptyWateringCanCursor: GameCursor
-    chance: int 
+    chance: int
 
 proc initCursors*(self: Stage1) =
   proc newCursor(kind: GameCursorKind, variant: string = ""): GameCursor = newGameCursor(self.assetLoader, kind, variant)
@@ -52,7 +56,6 @@ proc initCursors*(self: Stage1) =
   self.shovelCursor = newCursor(ShovelCursor)
   self.fullWateringCanCursor = newCursor(WateringCanCursor, "full")
   self.emptyWateringCanCursor = newCursor(WateringCanCursor, "empty")
-
 
 proc newStage1*(window: RenderWindow): Stage1 =
   let boundary: Boundary = (cint(100), cint(100), cint(100), cint(100))
@@ -72,6 +75,11 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.bugClickSound = result.soundRegistry.getSound(BugClickSound)
   result.gameMusic = result.soundRegistry.getSound(StageGameMusic)
   result.waterTimer = initDuration(seconds = 0)
+  result.chanceTimer = initDuration(seconds = 0)
+  result.potSpawnTimer = initDuration(seconds = 0)
+
+  result.onlyAntAndMealyTimer = initDuration(seconds = 0)
+  result.onlySpawnAntAndMealy = true
 
   result.score = 0
   result.font = newFont(joinPath("assets", "fonts", "PressStart2P.ttf"))
@@ -80,7 +88,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.scoreText.characterSize = 14
 
   result.currentCursor = result.clickerCursor
-  result.chance = 2000 
+  result.chance = 4000
 
 
 proc load*(self: Stage1) =
@@ -102,61 +110,16 @@ proc load*(self: Stage1) =
     self.assetLoader.newImageAsset("pot-sprite-dirt.png")
   ))
 
-  let pot2 = newPot(self.assetLoader.newSprite(
-    self.assetLoader.newImageAsset("pot-sprite.png")
-  ), self.assetLoader.newSprite(
-    self.assetLoader.newImageAsset("pot-sprite-dirt.png")
-  ))
-
   pot.setPosition(vec2(200, 200))
-  pot2.setPosition(vec2(200, 400))
-  #pot.placeDirt()
+  pot.placeDirt()
   #pot2.placeDirt()
 
   self.entities.add(Entity(pot))
-  self.entities.add(Entity(pot2))
 
   let sucSprite = randomSuccSprite(self.assetLoader)
   let suc = newSucculent(suc_sprite, self.soundRegistry)
   suc.setPot(some(pot))
   self.entities.add(Entity(suc))
-
-  let sucSprite2 = randomSuccSprite(self.assetLoader)
-  let suc2 = newSucculent(sucSprite2, self.soundRegistry)
-  suc2.setPot(some(pot2))
-  self.entities.add(Entity(suc2))
-
-  echo suc2.sprite.position
-  echo pot2.sprite.position
-
-  let antSprite = self.assetLoader.newSprite(
-    self.assetLoader.newImageAsset("ant-sprite.png"),
-  )
-  antSprite.position = vec2(500, 400)
-
-  let ant = newAnt(ant_sprite, self.soundRegistry)
-  self.entities.add(Entity(ant))
-
-  let mealySprite = self.assetLoader.newSprite(
-    self.assetLoader.newImageAsset("mealy-sprite.png"),
-  )
-  mealySprite.position = vec2(500, 400)
-
-  let mealy = newMealy(mealy_sprite, self.soundRegistry)
-  self.entities.add(Entity(mealy))
-
-  let beetleSprite = self.assetLoader.newSprite(
-    self.assetLoader.newImageAsset("beetle-sprite.png"),
-  )
-  beetleSprite.position = vec2(500, 400)
-
-  let beetle = newBeetle(beetle_sprite, self.soundRegistry)
-  self.entities.add(Entity(beetle))
-
-  discard ant.getTargetSuc(self.entities)
-  discard mealy.getTargetSuc(self.entities)
-  # let ant1, ant2, ant3 = delayedCreate(Ant() ...
-  #
 
 proc handleMenuEvent(self: Stage1, window: RenderWindow, kind: GameMenuItemKind) =
   case kind:
@@ -216,10 +179,33 @@ proc checkPlayerAttackEvent(self: Stage1, coords: Vector2f) : bool =
 
   return true
 
+proc hydrateSuc(self: Stage1) =
+  var maybePot = none(Pot)
+
+  echo "maybe hydrate suc?\n"
+
+  for entity in self.entities:
+    if entity of Pot:
+      let pot = Pot(entity)
+      self.currentCursor.updateRectPosition()
+      echo pot.dirtSprite.globalBounds
+      echo self.currentCursor.rect
+      echo " intersecting: ", pot.dirtSprite.globalBounds.intersects(self.currentCursor.rect, self.currentCursor.interRect)
+      if pot.hasDirt and not pot.hasSuc and pot.dirtSprite.globalBounds.intersects(self.currentCursor.rect, self.currentCursor.interRect):
+        maybePot = some(pot)
+        break
+
+  if maybePot.isSome:
+    let pot = maybePot.get()
+
+    echo "growing suc...\n"
+    self.potsNeedSuc.add((pot, getTime()))
+
 proc checkPlayerWateringEvent(self: Stage1, coords: Vector2f) : bool =
-  if self.currentCursor.variant == "full":
-    self.wateringSound.play()
-    # Hydrade plont if intersecting
+  if self.currentCursor.variant == "empty":
+    return true
+
+  self.wateringSound.play()
   return true
 
 proc checkPlayerPlantEvent(self: Stage1, coords: Vector2f) : bool =
@@ -227,7 +213,8 @@ proc checkPlayerPlantEvent(self: Stage1, coords: Vector2f) : bool =
 
   for entity in self.entities:
     if entity of Pot:
-      if entity.rect.intersects(self.currentCursor.rect, self.currentCursor.interRect): maybePot = some(Pot(entity))
+      let pot = Pot(entity)
+      if not pot.hasDirt and pot.dirtSprite.globalBounds.intersects(self.currentCursor.rect, self.currentCursor.interRect): maybePot = some(pot)
 
   if not maybePot.isSome: return false
   let pot = maybePot.get()
@@ -235,9 +222,8 @@ proc checkPlayerPlantEvent(self: Stage1, coords: Vector2f) : bool =
 
   self.plantSound.play()
 
+  echo "placing dirt...\n"
   pot.placeDirt()
-  var theDuration = initDuration(seconds = 0)
-  self.potsNeedSuc.add((pot, theDuration, true))
 
 proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, event: Event) =
   let coords = window.mapPixelToCoords(vec2(event.mouseButton.x, event.mouseButton.y), self.view)
@@ -247,13 +233,17 @@ proc handleLeftMouseEvent(self: Stage1, pressed: bool, window: RenderWindow, eve
     if self.checkGameMenuClickEvent(window, coords): return
     if self.currentCursor.kind == ClickerCursor and self.checkPlayerAttackEvent(coords): return
     if self.currentCursor.kind == WateringCanCursor and self.checkPlayerWateringEvent(coords): return
+    if self.currentCursor.kind == ShovelCursor and self.checkPlayerPlantEvent(coords): return
   # Mouse was released
   else:
     if self.currentCursor.variant == "full" and self.isMouseDown:
       if self.waterTimer >= initDuration(seconds = 3):
         self.waterTimer = initDuration(seconds = 0)
         self.currentCursor = self.emptyWateringCanCursor
+        self.hydrateSuc()
+
       self.wateringSound.stop()
+
 
     self.isMouseDown = false
 
@@ -270,6 +260,9 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
         window.close()
       else: discard
     of EventType.MouseButtonPressed:
+      if self.isGameOver:
+        return
+
       case event.mouseButton.button:
       of MouseButton.Left:
         self.isMouseDown = true
@@ -286,21 +279,21 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
 
 
 proc spawn*(self: Stage1, chance: int) =
-  # ant frequency: 15%
-  # mealy frequency: 5%
-  # spider frequency: 4%
-  # beetle frequency: 1%
+  # TODO refactor to use timers
+  # ant frequency: 15%?
+  # mealy frequency: 5%?
+  # spider frequency: 4%?
+  # beetle frequency: 1%?
   randomize()
-  let bugRand  = rand(chance)
-  if bugRand < 20:
+  let bugRand = rand(chance)
+  if (self.onlySpawnAntAndMealy and bugRand < 30) or bugRand < 20:
     let antSprite = self.assetLoader.newSprite(
       self.assetLoader.newImageAsset("ant-sprite.png")
     )
     antSprite.position = vec2(rand(640), 480)
     let ant = newAnt(antSprite, self.soundRegistry)
     self.entities.add(Entity(ant))
-
-  elif bugRand > 15 and bugRand < 25:
+  elif (self.onlySpawnAntAndMealy and bugRand > 30 and bugRand < 40) or (bugRand > 20 and bugRand < 28):
     let mealySprite = self.assetLoader.newSprite(
       self.assetLoader.newImageAsset("mealy-sprite.png")
     )
@@ -309,7 +302,9 @@ proc spawn*(self: Stage1, chance: int) =
     let mealy = newMealy(mealy_sprite, self.soundRegistry)
     self.entities.add(Entity(mealy))
 
-  elif bugRand > 25 and bugRand < 28:
+  if self.onlySpawnAntAndMealy:
+    discard
+  elif bugRand > 28 and bugRand < 30:
     let spiderSprite = self.assetLoader.newSprite(
       self.assetLoader.newImageAsset("spider-sprite.png")
     )
@@ -317,20 +312,20 @@ proc spawn*(self: Stage1, chance: int) =
     let spider = newSpider(spiderSprite, self.soundRegistry)
     self.entities.add(Entity(spider))
 
-  elif bugRand > 28 and bugRand < 30:
+  elif bugRand > 30 and bugRand < 32:
     let beeSprite = self.assetLoader.newSprite(
       self.assetLoader.newImageAsset("bee-sprite.png")
     )
     beeSprite.position = vec2(rand(640), 480)
-    let bee = newSpider(beeSprite, self.soundRegistry)
+    let bee = newBee(beeSprite, self.soundRegistry)
     self.entities.add(Entity(bee))
 
-  elif bugRand == 30:
+  elif bugRand == 32:
     let beetleSprite = self.assetLoader.newSprite(
       self.assetLoader.newImageAsset("beetle-sprite.png")
     )
     beetleSprite.position = vec2(rand(640), 480)
-    let beetle = newSpider(beetleSprite, self.soundRegistry)
+    let beetle = newBeetle(beetleSprite, self.soundRegistry)
     self.entities.add(Entity(beetle))
 
   #elif bugRand > 29 and bugRand <= 30:
@@ -346,35 +341,42 @@ proc spawn*(self: Stage1, chance: int) =
 proc addPot(self: Stage1, pot: Pot): Vector2f =
   randomize()
   var randVec: Vector2f = vec2(rand(600), rand(100) + 200)
-  var colliding: bool = true
-  pot.setPosition(randVec)
-  pot.rect = rect(pot.sprite.position.x - 5, pot.sprite.position.y - 5, cfloat(pot.sprite.scaledSize.x) / 2, cfloat(pot.sprite.scaledSize.y) / 2)
-  
-  #while colliding:
-  #  for entity in self.entities:
-  #    if entity of Pot and entity.rect.intersects(pot.rect, pot.interRect):
-  #      randVec = vec2(rand(600), rand(100) + 200)
-  #      pot.setPosition(randVec)
-  #      pot.rect = rect(pot.sprite.position.x - 5, pot.sprite.position.y - 5, cfloat(pot.sprite.scaledSize.x) / 2, cfloat(pot.sprite.scaledSize.y) / 2)
-  #      colliding = true
-  #      break
+  var done = false
+
+  while not done:
+    for entity in self.entities:
+      if entity of Succulent:
+        # Check if randVec intersects with this pot
+        var intRect = rect(0.0,0.0,0.0,0.0)
+        if entity.rect.intersects(rect(randVec.x, randVec.y, cfloat(entity.sprite.scaledSize.x), cfloat(entity.sprite.scaledSize.y) + cfloat(pot.sprite.scaledSize.y)), intRect):
+          randVec = vec2(rand(600), rand(100) + 200)
+          break
+
+      pot.setPosition(randVec)
+      done = true
+      break
+
+    if done:
+      break
+
+    echo "There was no other succulent somehow? this should not happen\n"
+    pot.setPosition(randVec)
+    done = true
+
+  echo "Adding pot!"
+  self.entities.add(Entity(pot))
+
   return randVec
 
 proc update*(self: Stage1, window: RenderWindow) =
-  if 0 == now().second mod 30:
-    self.chance -= 1
-  if 0 == now().minute mod 5:
-    let pot = newPot(self.assetLoader.newSprite(
-      self.assetLoader.newImageAsset("pot-sprite.png")
-    ), self.assetLoader.newSprite(
-      self.assetLoader.newImageAsset("pot-sprite-dirt.png")
-    ))
-    #pot.setPosition(addPot(pot))
 
-  self.spawn(self.chance)
-  let mouseCoords = window.mapPixelToCoords(mouse_getPosition(window), self.view)
-  self.currentCursor.sprite.position = mouseCoords
-  self.currentCursor.updateRectPosition()
+  for cursor in @[self.clickerCursor,
+                 self.shovelCursor,
+                 self.fullWateringCanCursor,
+                 self.emptyWateringCanCursor]:
+    let mouseCoords = window.mapPixelToCoords(mouse_getPosition(window), self.view)
+    cursor.sprite.position = mouseCoords
+    cursor.updateRectPosition()
 
   if not self.isGameOver:
     self.isGameOver = not self.entities.anyIt(it of Succulent)
@@ -382,23 +384,54 @@ proc update*(self: Stage1, window: RenderWindow) =
   if self.isGameover:
     return
 
+  self.spawn(self.chance)
+
   # Delete last round of dead succs if any
   self.entities.keepItIf(not it.isDead)
 
   let dt = self.Scene.update(window)
 
-  self.potsNeedSuc.keepItIf(it[2])
+  if self.onlyAntAndMealyTimer > initDuration(minutes = 2):
+    self.onlySpawnAntAndMealy = false
+  else:
+    # only spawn ants and mealies for first couple minutes
+    self.onlyAntAndMealyTimer += dt
+    self.onlySpawnAntAndMealy = true
 
-  for t in self.potsNeedSuc:
-    var (pot, timeSinceAdded, notAdded) = t
-    timeSinceAdded += dt
-    if timeSinceAdded >= initDuration(seconds = 3):
+  self.chanceTimer += dt
+  if self.chanceTimer >= initDuration(seconds = 1):
+    self.chanceTimer = initDuration(seconds = 0)
+    echo self.chance
+    if self.chance > 3000:
+      self.chance -= 10
+    # Decrease the chance decrement significantly
+    elif self.chance > 2000:
+      self.chance -= 2
+    elif self.chance > 500:
+      self.chance -= 1
+
+  self.potSpawnTimer += dt
+
+  if self.potSpawnTimer >= initDuration(seconds = 10):
+    self.potSpawnTimer = initDuration(seconds = 0)
+    let pot = newPot(self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("pot-sprite.png")
+    ), self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("pot-sprite-dirt.png")
+    ))
+    discard self.addPot(pot)
+
+  # Add sucs to pots that need it
+  for it in self.potsNeedSuc:
+    let (pot, timeAdded) = it
+    if self.currentTime - timeAdded >= initDuration(seconds = 3):
       let sucSprite = randomSuccSprite(self.assetLoader)
       let suc = newSucculent(suc_sprite, self.soundRegistry)
       suc.setPot(some(pot))
       self.entities.add(Entity(suc))
 
-      notAdded = false
+  # if pot had time to be added, delete it
+  self.potsNeedSuc.keepItIf(self.currentTime - it[1] <= initDuration(seconds = 3))
 
   if self.isMouseDown and self.currentCursor.kind == WateringCanCursor and self.currentCursor.variant == "full":
     self.waterTimer += dt
@@ -407,13 +440,13 @@ proc update*(self: Stage1, window: RenderWindow) =
     self.waterTimer = initDuration(seconds = 0)
     self.currentCursor = self.emptyWateringCanCursor
     self.wateringSound.stop()
+    self.hydrateSuc()
 
 proc draw*(self: Stage1, window: RenderWindow) =
   # var mouseRect = newRectangleShape(vec2(self.currentCursor.rect.width, self.currentCursor.rect.height))
   # mouseRect.position = vec2(self.currentCursor.rect.left, self.currentCursor.rect.top)
 
   window.draw(self.background)
-  self.gameMenu.draw(window)
 
   self.Scene.draw(window)
 
@@ -423,6 +456,8 @@ proc draw*(self: Stage1, window: RenderWindow) =
 
   window.draw(self.scoreText)
 
+  self.gameMenu.draw(window)
+
   window.draw(self.currentCursor.sprite)
 
   if self.isGameOver:
@@ -431,7 +466,7 @@ proc draw*(self: Stage1, window: RenderWindow) =
     gameOverText.position = vec2(window.size.x/2 - cfloat(gameOverText.globalBounds.width/2), window.size.y/2 - cfloat(gameOverText.globalBounds.height/2))
     window.draw(gameOverText)
 
+  # var mouseRect = newRectangleShape(vec2(self.currentCursor.rect.width, self.currentCursor.rect.height))
+  # mouseRect.position = vec2(self.currentCursor.rect.left, self.currentCursor.rect.top)
 
   # window.draw(mouseRect)
-  
-

@@ -12,4 +12,5 @@ proc newSoundRegistry*(assetLoader: AssetLoader): SoundRegistry =
     result[kind] = assetLoader.newSoundAsset(kind)
 
 proc getSound*(self: SoundRegistry, kind: SoundAssetKind): Sound =
+  # idk why but sound buffers are getting fucked
   return self[kind].newSound()

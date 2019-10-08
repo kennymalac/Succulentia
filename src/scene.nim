@@ -16,6 +16,7 @@ type
 
     origin: Vector2f
 
+    initialTimeNotSet: bool
     currentTime*: times.Time
     previousTime: times.Time
 
@@ -23,9 +24,10 @@ proc initScene*(self: Scene, window: RenderWindow, title: string, origin: Vector
   self.title = title
   self.origin = origin
   self.size = window.size
-  self.previousTime = getTime()
   self.view = newView(origin, window.size)
   self.assetLoader = newAssetLoader("assets")
+  self.previousTime = getTime()
+  self.currentTime = getTime()
 
 proc newScene*(window: RenderWindow, title: string, origin: Vector2f): Scene =
   new result
