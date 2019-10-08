@@ -16,7 +16,7 @@ type
 
     origin: Vector2f
 
-    currentTime: times.Time
+    currentTime*: times.Time
     previousTime: times.Time
 
 proc initScene*(self: Scene, window: RenderWindow, title: string, origin: Vector2f) =

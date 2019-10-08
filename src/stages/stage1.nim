@@ -42,7 +42,7 @@ type
     shovelCursor: GameCursor
     fullWateringCanCursor: GameCursor
     emptyWateringCanCursor: GameCursor
-    chance: float 
+    chance: int 
 
 proc initCursors*(self: Stage1) =
   proc newCursor(kind: GameCursorKind, variant: string = ""): GameCursor = newGameCursor(self.assetLoader, kind, variant)
@@ -80,7 +80,7 @@ proc newStage1*(window: RenderWindow): Stage1 =
   result.scoreText.characterSize = 14
 
   result.currentCursor = result.clickerCursor
-  result.chance = 3000 
+  result.chance = 2000 
 
 
 proc load*(self: Stage1) =
@@ -109,7 +109,7 @@ proc load*(self: Stage1) =
   ))
 
   pot.setPosition(vec2(200, 200))
-  pot2.setPosition(vec2(400, 400))
+  pot2.setPosition(vec2(200, 400))
   #pot.placeDirt()
   #pot2.placeDirt()
 
@@ -285,7 +285,7 @@ proc pollEvent*(self: Stage1, window: RenderWindow) =
     else: discard
 
 
-proc spawn*(self: Stage1, chance: float) =
+proc spawn*(self: Stage1, chance: int) =
   # ant frequency: 15%
   # mealy frequency: 5%
   # spider frequency: 4%
@@ -299,6 +299,7 @@ proc spawn*(self: Stage1, chance: float) =
     antSprite.position = vec2(rand(640), 480)
     let ant = newAnt(antSprite, self.soundRegistry)
     self.entities.add(Entity(ant))
+
   elif bugRand > 15 and bugRand < 25:
     let mealySprite = self.assetLoader.newSprite(
       self.assetLoader.newImageAsset("mealy-sprite.png")
@@ -308,6 +309,32 @@ proc spawn*(self: Stage1, chance: float) =
     let mealy = newMealy(mealy_sprite, self.soundRegistry)
     self.entities.add(Entity(mealy))
 
+  elif bugRand > 25 and bugRand < 28:
+    let spiderSprite = self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("spider-sprite.png")
+    )
+    spiderSprite.position = vec2(rand(640), 480)
+    let spider = newSpider(spiderSprite, self.soundRegistry)
+    self.entities.add(Entity(spider))
+
+  elif bugRand > 28 and bugRand < 30:
+    let beeSprite = self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("bee-sprite.png")
+    )
+    beeSprite.position = vec2(rand(640), 480)
+    let bee = newSpider(beeSprite, self.soundRegistry)
+    self.entities.add(Entity(bee))
+
+  elif bugRand == 30:
+    let beetleSprite = self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("beetle-sprite.png")
+    )
+    beetleSprite.position = vec2(rand(640), 480)
+    let beetle = newSpider(beetleSprite, self.soundRegistry)
+    self.entities.add(Entity(beetle))
+
+  #elif bugRand > 29 and bugRand <= 30:
+
  # elif bugRand > 25 and bugRand < 30:
  #   let spiderSprite = self.assetLoader.newSprite(
  #     self.assetLoader.newImageAsset("spider-sprite.png")
@@ -316,8 +343,34 @@ proc spawn*(self: Stage1, chance: float) =
  #   spiderSprite.position = vec2(rand(640), 480)
  #   self.entities.add((Entity(spider))
 
+proc addPot(self: Stage1, pot: Pot): Vector2f =
+  randomize()
+  var randVec: Vector2f = vec2(rand(600), rand(100) + 200)
+  var colliding: bool = true
+  pot.setPosition(randVec)
+  pot.rect = rect(pot.sprite.position.x - 5, pot.sprite.position.y - 5, cfloat(pot.sprite.scaledSize.x) / 2, cfloat(pot.sprite.scaledSize.y) / 2)
+  
+  #while colliding:
+  #  for entity in self.entities:
+  #    if entity of Pot and entity.rect.intersects(pot.rect, pot.interRect):
+  #      randVec = vec2(rand(600), rand(100) + 200)
+  #      pot.setPosition(randVec)
+  #      pot.rect = rect(pot.sprite.position.x - 5, pot.sprite.position.y - 5, cfloat(pot.sprite.scaledSize.x) / 2, cfloat(pot.sprite.scaledSize.y) / 2)
+  #      colliding = true
+  #      break
+  return randVec
+
 proc update*(self: Stage1, window: RenderWindow) =
-  self.chance -= 0.001
+  if 0 == now().second mod 30:
+    self.chance -= 1
+  if 0 == now().minute mod 5:
+    let pot = newPot(self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("pot-sprite.png")
+    ), self.assetLoader.newSprite(
+      self.assetLoader.newImageAsset("pot-sprite-dirt.png")
+    ))
+    #pot.setPosition(addPot(pot))
+
   self.spawn(self.chance)
   let mouseCoords = window.mapPixelToCoords(mouse_getPosition(window), self.view)
   self.currentCursor.sprite.position = mouseCoords

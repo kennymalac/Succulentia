@@ -42,15 +42,15 @@ proc initEnemy*(enemy: Enemy, sprite: Sprite) =
     enemy.spawnSound.get().play()
 
 proc newAnt*(sprite: Sprite, soundRegistry: SoundRegistry): Ant =
-  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 5, speed: 0.6, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
+  result = Ant(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 5, speed: 0.3, health: 10, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
   initEnemy(result, sprite)
 
 proc newMealy*(sprite: Sprite, soundRegistry: SoundRegistry): Mealy =
-  result = Mealy(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 1.75, health: 30, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound2), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
+  result = Mealy(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 10, speed: 1, health: 30, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound2), attackSpeed: initDuration(seconds = 1), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
   initEnemy(result, sprite)
 
 proc newBee*(sprite: Sprite, soundRegistry: SoundRegistry): Bee =
-  result = Bee(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 5, speed: 2.5, health: 30, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound3), attackSpeed: initDuration(milliseconds = 500), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
+  result = Bee(sprite: sprite, direction: vec2(-1.0, 1.0), damage: 5, speed: 1.75, health: 30, isAttacking: false, attackSound: soundRegistry.getSound(BugChompSound3), attackSpeed: initDuration(milliseconds = 500), deathSound: soundRegistry.getSound(BugDeathSound), spawnSound: none(Sound))
   initEnemy(result, sprite)
 
 proc newBeetle*(sprite: Sprite, soundRegistry: SoundRegistry): Beetle =
