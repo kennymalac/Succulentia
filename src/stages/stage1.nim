@@ -412,7 +412,7 @@ proc update*(self: Stage1, window: RenderWindow) =
 
   self.potSpawnTimer += dt
 
-  if self.potSpawnTimer >= initDuration(seconds = 10):
+  if self.potSpawnTimer >= initDuration(seconds = 30):
     self.potSpawnTimer = initDuration(seconds = 0)
     let pot = newPot(self.assetLoader.newSprite(
       self.assetLoader.newImageAsset("pot-sprite.png")

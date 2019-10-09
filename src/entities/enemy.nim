@@ -170,7 +170,7 @@ proc update*(self: Enemy, dt: times.Duration, entities: seq[Entity]) =
       let isSuccDead = self.attack(targetSuc)
       if isSuccDead:
         self.isAttacking = false
-        targetSuc.isDead = true # RIP
+        targetSuc.die() # RIP
         targetSuc.deathSound.play()
 
 proc print*(self: Ant) =
